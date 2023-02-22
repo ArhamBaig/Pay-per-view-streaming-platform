@@ -1,7 +1,30 @@
 const express = require('express');
 const router = express();
-const ejs = require('ejs');
 const path = require('path');
+const mongoose = require('mongoose');
+const Schema = mongoose.Schema;
+const bcrypt = require('bcryptjs')
+
+const loginSchema = new Schema({
+  email:{
+    type: String,
+    required: true,
+    unique: true
+  },
+  password:{
+    type: String,
+    required: true
+  }
+});
+// middleware for session authentication
+const isAuth = (req, res, next)=>{
+  if(req.session.isAuth){
+    next()
+  }
+  else{
+    res.redirect('/login')
+  }
+}
 
 router.set('view engine', 'ejs');
 
@@ -11,5 +34,31 @@ router.get('', (req, res) => {
   res.render('../views/login.ejs')
 });
 
+router.post("/login", async (req,res)=>{
+  const {email,password} =req.body;
+  const user = await loginSchema.findOne({email});
 
-module.exports = router;
+  if(!user){
+    return res.redirect("/login")
+  }
+  const isMatch = await bcrypt.compare(password,user.password);
+
+  if(!isMatch){
+    return res.redirect("/login")
+  }
+  req.session.isAuth = true;
+  res.redirect("/home")
+
+
+})
+router.get("/home",isAuth,(req,res)=>{
+  res.render("home")
+})
+// module.exports = router;
+loginModel = mongoose.model("Login",loginSchema);
+// module.exports = mongoose.model("Login",loginSchema);
+
+module.exports = {
+  router: router,
+  loginModel: loginModel
+}
