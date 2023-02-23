@@ -39,14 +39,19 @@ router.post("/login", async (req,res)=>{
   const user = await loginSchema.findOne({email});
 
   if(!user){
+    req.session.error = "Invalid Credentials";
     return res.redirect("/login")
   }
   const isMatch = await bcrypt.compare(password,user.password);
 
   if(!isMatch){
+    req.session.error = "Invalid Credentials";
+    
     return res.redirect("/login")
   }
+  
   req.session.isAuth = true;
+  req.session.email = user.email;
   res.redirect("/home")
 
 
