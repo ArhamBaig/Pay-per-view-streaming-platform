@@ -1,123 +1,56 @@
 <!DOCTYPE html>
 <html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Login | Node Auth</title>
+    <style>
+      .login-form {
+        width: 400px;
+        height: 400px;
+        margin: 1rem auto;
+      }
 
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <script src="https://kit.fontawesome.com/64d58efce2.js" crossorigin="anonymous"></script>
-  <!-- <script src="/js/login.js"></script> -->
-  <link rel="stylesheet" href="../public/stylesheets/login.css" />
-  <title>Sign in & Sign up Form</title>
-</head>
+      .input-group {
+        width: 100%;
+      }
 
-<body>
-  <div class="container">
-    <div class="forms-container">
-      <div class="signin-signup">
-        <form action="#" class="sign-in-form">
-          <h2 class="title">Sign in</h2>
-          <div class="input-field">
-            <i class="fas fa-user"></i>
-            <input type="email" id="email"  placeholder="Email" name="email"/>
-            <!--Email from db  -->
-          </div>
-          <div class="input-field">
-            <i class="fas fa-lock"></i>
-            <input type="password" id="password" placeholder="Password" name="password" />
-            <!-- password from db -->
-          </div>
-          <input type="submit" value="Login" class="btn solid"/>
-          <p class="social-text">Or Sign in with social platforms</p>
-          <div class="social-media">
-            <a href="#" class="social-icon">
-              <i class="fab fa-facebook-f"></i>
-            </a>
-            <a href="#" class="social-icon">
-              <i class="fab fa-twitter"></i>
-            </a>
-            <a href="#" class="social-icon">
-              <i class="fab fa-google"></i>
-            </a>
-            <a href="#" class="social-icon">
-              <i class="fab fa-linkedin-in"></i>
-            </a>
-          </div>
-        </form>
-        <form action="#" class="sign-up-form">
-          <h2 class="title">Sign up</h2>
-          <div class="input-field">
-            <i class="fas fa-envelope"></i>
-            <input type="text" id="first_name" placeholder="First Name" />
-            <!-- first name from db -->
-          </div>
-          <div class="input-field">
-            <i class="fas fa-envelope"></i>
-            <input type="text" id="last_name" placeholder="Last Name" />
-            <!-- last name from db -->
-          </div>
-          <div class="input-field">
-            <i class="fas fa-envelope"></i>
-            <input type="email" id="reg_email" placeholder="Email" />
-            <!-- email from db -->
-          </div>
-          <div class="input-field">
-            <i class="fas fa-lock"></i>
-            <input type="password" id="reg_password" placeholder="Password" />
-            <!-- password from db -->
-          </div>
-          <input type="submit" class="btn" value="Sign up"/>
-          <p class="social-text">Or Sign up with social platforms</p>
-          <div class="social-media">
-            <a href="#" class="social-icon">
-              <i class="fab fa-facebook-f"></i>
-            </a>
-            <a href="#" class="social-icon">
-              <i class="fab fa-twitter"></i>
-            </a>
-            <a href="#" class="social-icon">
-              <i class="fab fa-google"></i>
-            </a>
-            <a href="#" class="social-icon">
-              <i class="fab fa-linkedin-in"></i>
-            </a>
-          </div>
-        </form>
-      </div>
-    </div>
+      .input-group label {
+        display: block;
+      }
 
-    <div class="panels-container">
-      <div class="panel left-panel">
-        <div class="content">
-          <h3>
-            PAY PER VIEW VIDEO HOSTING & STREAMING</h3>
-          <p>
-            Monetize your video and keep 100% of your revenue!
-            Rent, sell, offer subscriptions, create tickets and more...!
-          </p>
-          <button class="btn transparent" id="sign-up-btn">
-            Sign up
-          </button>
+      .input-group input {
+        width: 100%;
+      }
+
+      button {
+        padding: 10px 17px;
+        margin-top: 1rem;
+        font-size: 1rem;
+        background: #eee;
+        border: 1px solid #333;
+        cursor: pointer;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="login-form">
+      <% if(err) { %>
+      <p style="color: red;"><%= err %></p>
+      <% } %>
+      <h3>Login Page</h3>
+      <form action="/login" method="POST">
+        <div class="input-group">
+          <label for="email">Email:</label>
+          <input type="email" name="email" />
         </div>
-        <img src="images/log.svg" class="image" alt="" />
-      </div>
-      <div class="panel right-panel">
-        <div class="content">
-
-          <h3>streaming platform features</h3>
-          <p>
-            Live pay-per-view (PPV) offers customers to purchase access to a single video event, whether they subscribe
-            to your channel or not.
-            You can also repackage past live video events as PPV videos.
-          </p>
-          <button class="btn transparent" id="sign-in-btn">
-            Sign in
-          </button>
+        <div class="input-group">
+          <label for="password">Password:</label>
+          <input type="password" name="password" />
         </div>
-        <img src="images/register.png" class="image" alt="" />
-      </div>
+        <button>Login</button>
+      </form>
+      <a href="/register">Register</a>
     </div>
-  </div>
-</body>
-<script src="../public/javascripts/app.js"></script>
-
+  </body>
 </html>
