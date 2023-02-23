@@ -54,6 +54,7 @@ exports.register_post = async (req, res) => {
   const hasdPsw = await bcrypt.hash(password, 12);
 
   user = new User({
+    
     username,
     email,
     password: hasdPsw,
