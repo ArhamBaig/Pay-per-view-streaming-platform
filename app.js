@@ -4,9 +4,10 @@ const bodyParser = require('body-parser');
 const path = require('path');
 const config = require("config");
 const mongodbsession = require('connect-mongodb-session')(session);
-const loginController = require("./controllers/login");
+const userController = require("./controllers/userController");
 // const homeController = require("./routes/home");
 const isAuth = require("./middleware/isAuth");
+const creatorController = require("./controllers/creatorController");
 const app = express();
 
 const connectDB = require("./config/db");
@@ -35,16 +36,19 @@ app.use('/public/stylesheets', express.static(path.join(__dirname, 'public/style
 app.use('/public/javascripts', express.static(path.join(__dirname, 'public/javascripts')));
 
 // Login Page
-app.get("/login", loginController.login_get);
-app.post("/login", loginController.login_post);
+app.get("/login", userController.login_get);
+app.post("/login", userController.login_post);
 
 // Register Page
-app.get("/register", loginController.register_get);
-app.post("/register", loginController.register_post);
+app.get("/register", userController.register_get);
+app.post("/register", userController.register_post);
 
-app.post("/logout", loginController.logout_post);
+app.post("/logout", userController.logout_post);
 
-app.get("/home",isAuth,loginController.home_get);
+app.post("/creator",isAuth,creatorController.creator_get);
+app.post("/creator",isAuth,creatorController.creator_post);
+
+app.get("/home",isAuth,userController.home_get);
 app.listen(port, () => console.log(`Listening on port ${port}..`));
 
 module.exports = app;
