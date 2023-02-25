@@ -7,7 +7,7 @@ const mongodbsession = require('connect-mongodb-session')(session);
 const userController = require("./controllers/userController");
 // const homeController = require("./routes/home");
 const isAuth = require("./middleware/isAuth");
-const creatorController = require("./controllers/creatorController");
+const channelController = require("./controllers/channelController");
 const app = express();
 
 const connectDB = require("./config/db");
@@ -45,8 +45,8 @@ app.post("/register", userController.register_post);
 
 app.post("/logout", userController.logout_post);
 
-app.post("/creator",isAuth,creatorController.creator_get);
-app.post("/creator",isAuth,creatorController.creator_post);
+app.get("/channel",isAuth,channelController.channel_get);
+app.post("/channel",isAuth,channelController.channel_post);
 
 app.get("/home",isAuth,userController.home_get);
 app.listen(port, () => console.log(`Listening on port ${port}..`));
