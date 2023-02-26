@@ -33,6 +33,7 @@ exports.channel_post = async (req, res) => {
           });
         await newChannel.save();
         req.session.isAuth = true;
+        req.session.channel_id = newChannel.channel_id;
         res.redirect("/home");
         }
         catch (err) {

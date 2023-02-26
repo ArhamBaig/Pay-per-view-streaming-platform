@@ -15,106 +15,31 @@
 </head>
 
 <body>
-  <header>
-    <nav class="navbar navbar-expand-lg mt-3" style="padding-left: 1.5rem; padding-right: 1.5rem;">
-      <div class="container-fluid">
-        <a class="navbar-brand ms-4" href="#"><img src="/images/logo.png" alt="logo"></a>
-        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent"
-          aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
-          <span class="navbar-toggler-icon"></span>
-        </button>
-        <div class="collapse navbar-collapse" id="navbarSupportedContent">
-          <ul class="navbar-nav me-auto mb-2 mb-lg-0">
-            <li class="nav-item">
-              <a class="nav-link" href="home.html">Home</a>
-            </li>
-            <li class="nav-item">
-              <a class="nav-link" href="#">Following</a>
-            </li>
-            <li class="nav-item">
-              <a class="nav-link" href="live.html">Live</a>
-            </li>
 
-          </ul>
-          <form class="d-flex navbar-form col-lg-4 mx-lg-auto" id="search" role="search">
-            <div class="form-group mb-0">
-              <input type="text" placeholder="Search">
-            </div>
-            <img src="/images/search.png">
-          </form>
-
-          <div class="me-4 justify-content-end">
-            <a>
-              <img src="/images/upload.png" alt="avatar" class="img-fluid  me-3" width="30">
-            </a>
-            <a href="start-stream.html">
-              <img src="/images/create video.png" alt="avatar" class="img-fluid me-3" width="35">
-            </a>
-            <a>
-              <img src="/images/simon.png" alt="avatar" class="img-fluid rounded-circle me-3" width="45">
-            </a>
-          </div>
-        </div>
-      </div>
-    </nav>
-  </header>
   <main>
 
-    <!-- <div class="row ms-2">
-            <div class="select-screen col-2">
-                <div class="stream-screen mt-3 ">
-                    <h3 class="border-bottom text-center text-white p-1 m-2">Upload Settings</h3>
-                    <div class="row m-1">
-                        <div class="col">
-                          <h5>Choose Thumbnail</h5>
-                        </div>
-                        <div class="col">
-                       
-                            
-                            <button class="btn btn-primary">Upload Thumbnail</button>
-                         
-                        </div>
-                      </div>
-                      <div class="row m-1">
-                        <div class="col">   
-                          <h5>Choose Video</h5>
-                        </div>
-                        <div class="col">
-                            <button class="btn btn-primary">Upload Video</button>                          
-                        </div>
-                      </div>
-                </div>
-            </div>
-          </div> -->
     <div>
-      <form action="uploadvideo" method="post" enctype="multipart/form-data" id="myform">
-        <div>
-          <label>Select Image:</label>
-          <input type="file" name="image" required>
-        </div>
-        <!-- <div>
-          <label>Image Name:</label>
-          <input type="text" name="imageName" style="color: black;" required>
-        </div> -->
+      <form action="/upload" method="POST" enctype="multipart/form-data">
+
         <br>
         <div>
-          <label>Select Video:</label>
-          <input type="file" name="video" required>  
+          <label>select Video:</label>
+          <input type="file" name="video">
         </div>
         <div>
-          <!-- <label>Video Name:</label>
-          <input type="text" name="videoName" required>
-        </div> -->
+          <label>Enter Video Title:</label>
+          <input type="text" name="title">
+        </div>
+        <div>
+          <label>Enter Video description:</label>
+          <input type="text" name="description">
+        </div>
+        
         <br>
-        <input type="submit" value="Upload">
+        <button>Upload</button>
       </form>
 
     </div>
-
-
-
-
-
 
   </main>
   <footer>
