@@ -1,0 +1,16 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <link href="https://vjs.zencdn.net/7.14.3/video-js.css" rel="stylesheet" />
+  <script src="https://vjs.zencdn.net/7.14.3/video.min.js%22%3E"></script>
+  <title>Video.js Example</title>
+</head>
+<body>
+  <video id="my-video" class="video-js vjs-default-skin" controls preload="auto" width="640" height="264">
+    <source src="http://13.234.67.46/hls/mystream/mystream/_720p.m3u8" type="application/x-mpegURL">
+  </video>
+  <script>
+    var player = videojs('my-video');
+  </script>
+</body>
+</html>

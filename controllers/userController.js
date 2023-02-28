@@ -33,6 +33,10 @@ exports.login_post = async (req, res) => {
   req.session.isAuth = true;
   req.session.username = user.username;
   req.session.user_id = user.user_id;
+  {if (!user.channel_name){
+    
+  }
+  req.session.channel_name = user.channel_name;}
   res.redirect("/home");
 };
 
@@ -79,6 +83,43 @@ exports.logout_post = (req, res) => {
   });
 };
 
+
+exports.channel_get = (req, res) => {
+  const error = req.session.error;
+  delete req.session.error;
+  res.render("channel",{err:error});
+};
+
+exports.channel_post = async (req, res) => {
+  const { channel_name } = req.body;
+  const user_id = req.session.user_id;
+  
+  try {
+    const user = await User.findOne({ user_id });
+      console.log(user)
+
+      // Check if the creator name already exists in the database
+      const existingName = await User.findOne({ channel_name });
+
+      if (existingName) {
+          req.session.error = "Channel name already exists.";
+          return res.redirect("/channel");
+      }
+      console.log(channel_name);
+      user.channel_name = channel_name;
+
+      console.log(user);
+      await user.save();
+      req.session.success = "Channel name saved successfully";
+      req.session.isAuth = true;
+      req.session.channel_name = user.channel_name;
+      res.redirect("/home");
+      }
+      catch (err) {
+          req.session.error = err.message;
+          res.redirect("/channel");
+        }
+      };
 // router.use(express.static('./public'));
 // router.get('', (req, res) => {
 //   res.render('../views/login.ejs')

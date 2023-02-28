@@ -5,14 +5,15 @@ const shortid = require("shortid");
 
 const videoSchema = new Schema({
 
-  channel_id: {
-    type: String,
-    required: true
-  },
   video_id: {
     type: String,
     required: true,
   },
+  channel_name: {
+    type: String,
+    require: true
+  },
+
   video_title: {
     type: String,
     require:true

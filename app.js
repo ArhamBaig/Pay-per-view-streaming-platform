@@ -6,7 +6,10 @@ const config = require("config");
 const mongodbsession = require('connect-mongodb-session')(session);
 const userController = require("./controllers/userController");
 const uploadMiddleware = require("./middleware/multer");
+
 // const homeController = require("./routes/home");
+
+
 const isAuth = require("./middleware/isAuth");
 
 const channelController = require("./controllers/channelController");
@@ -34,6 +37,7 @@ app.use(
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(express.json());
 
+
 app.set('view engine', 'ejs');
 app.use(express.static('public'));
 
@@ -50,13 +54,14 @@ app.post("/register", userController.register_post);
 
 app.post("/logout", userController.logout_post);
 
-app.get("/channel",isAuth,channelController.channel_get);
-app.post("/channel",isAuth,channelController.channel_post);
+app.get("/channel",isAuth,userController.channel_get);
+app.post("/channel",isAuth,userController.channel_post);
 
-app.get("/videos",isAuth,videoController.videos_get);
+// app.get("/videos",isAuth,videoController.videos_get);
 app.get("/upload",isAuth,videoController.video_upload_get);
 app.post("/upload",isAuth,uploadMiddleware.single('video'),videoController.video_upload_post);
 
+app.get("/videos",isAuth,videoController.videos_get);
 app.get("/home",isAuth,userController.home_get);
 app.listen(port, () => console.log(`Listening on port ${port}..`));
 
