@@ -25,6 +25,7 @@
     "jade": "^0.29.0",
     "mime-type": "^4.0.0",
     "mime-types": "^2.1.35",
+    "moment": "^2.29.4",
     "mongoose": "^6.9.2",
     "mongoose-sequence": "^5.3.1",
     "morgan": "~1.9.1",

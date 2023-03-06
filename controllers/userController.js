@@ -1,5 +1,6 @@
 const bcrypt = require("bcryptjs");
-
+const { S3Client, PutObjectCommand, GetObjectCommand } = require('@aws-sdk/client-s3');
+const { getSignedUrl } = require("@aws-sdk/s3-request-presigner");
 const User = require("../models/User");
 
 exports.home_page = (req,res)=>{
@@ -43,20 +44,25 @@ exports.login_post = async (req, res) => {
 exports.register_get = (req, res) => {
   const error = req.session.error;
   delete req.session.error;
-  res.render("register", { err: error });
+  res.render("signup", { err: error });
 };
 
 exports.register_post = async (req, res) => {
-  const { username, email, password } = req.body;
-
+  const { username, email, password1, password2} = req.body;
+ 
   let user = await User.findOne({ email });
 
   if (user) {
     req.session.error = "User already exists";
-    return res.redirect("/register");
+    return res.redirect("/signup");
   }
 
-  const hasdPsw = await bcrypt.hash(password, 12);
+  if (password1 != password2){
+    req.session.error = `Passwords do not match`;
+    return res.redirect("/signup");
+  }
+
+  const hasdPsw = await bcrypt.hash(password1, 12);
 
   user = new User({
     
@@ -65,10 +71,10 @@ exports.register_post = async (req, res) => {
     password: hasdPsw,
   });
 
-
+  error = req.session.error;
   await user.save();
   req.session.isAuth = true;
-  res.redirect("/login");
+  res.render("login",{err: error});
 };
 
 exports.home_get = (req, res) => {
@@ -84,78 +90,39 @@ exports.logout_post = (req, res) => {
 };
 
 
-exports.channel_get = (req, res) => {
-  const error = req.session.error;
-  delete req.session.error;
-  res.render("channel",{err:error});
-};
+// exports.channel_get = (req, res) => {
+//   const error = req.session.error;
+//   delete req.session.error;
+//   res.render("channel",{err:error});
+// };
 
-exports.channel_post = async (req, res) => {
-  const { channel_name } = req.body;
-  const user_id = req.session.user_id;
+// exports.channel_post = async (req, res) => {
+//   const { channel_name } = req.body;
+//   const user_id = req.session.user_id;
   
-  try {
-    const user = await User.findOne({ user_id });
-      console.log(user)
+//   try {
+//     const user = await User.findOne({ user_id });
+//       console.log(user)
 
-      // Check if the creator name already exists in the database
-      const existingName = await User.findOne({ channel_name });
+//       // Check if the creator name already exists in the database
+//       const existingName = await User.findOne({ channel_name });
 
-      if (existingName) {
-          req.session.error = "Channel name already exists.";
-          return res.redirect("/channel");
-      }
-      console.log(channel_name);
-      user.channel_name = channel_name;
+//       if (existingName) {
+//           req.session.error = "Channel name already exists.";
+//           return res.redirect("/channel");
+//       }
+//       console.log(channel_name);
+//       user.channel_name = channel_name;
 
-      console.log(user);
-      await user.save();
-      req.session.success = "Channel name saved successfully";
-      req.session.isAuth = true;
-      req.session.channel_name = user.channel_name;
-      res.redirect("/home");
-      }
-      catch (err) {
-          req.session.error = err.message;
-          res.redirect("/channel");
-        }
-      };
-// router.use(express.static('./public'));
-// router.get('', (req, res) => {
-//   res.render('../views/login.ejs')
-// });
-
-// router.post("/login", async (req,res)=>{
-//   const {email,password} =req.body;
-//   const user = await loginSchema.findOne({email});
-
-//   if(!user){
-//     req.session.error = "Invalid Credentials";
-//     return res.redirect("/login")
-//   }
-//   const isMatch = await bcrypt.compare(password,user.password);
-
-//   if(!isMatch){
-//     req.session.error = "Invalid Credentials";
-
-//     return res.redirect("/login")
-//   }
-  
-//   req.session.isAuth = true;
-//   req.session.email = user.email;
-//   res.redirect("/home")
-
-
-// })
-// router.get("/home",isAuth,(req,res)=>{
-//   res.render("home")
-// });
-
-// router.get()
-
-// loginModel = mongoose.model("Login",loginSchema);
-
-// module.exports = {
-//   router: router,
-//   loginModel: loginModel
-// }
+//       console.log(user);
+//       await user.save();
+//       req.session.success = "Channel name saved successfully";
+//       req.session.isAuth = true;
+//       req.session.channel_name = user.channel_name;
+//       res.redirect("/home");
+//       }
+//       catch (err) {
+//           req.session.error = err.message;
+//           res.redirect("/channel");
+//         }
+//       };

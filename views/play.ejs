@@ -1,0 +1,101 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+  <title>Title</title>
+  <!-- Required meta tags -->
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+
+  <!-- Bootstrap CSS v5.2.1 -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.1/dist/css/bootstrap.min.css" rel="stylesheet"
+    integrity="sha384-iYQeCzEYFbKjA/T2uDLTpkwGzCiq6soy8tYaI1GyVh/UjpbCx/TYkiZhlZB6+fzT" crossorigin="anonymous">
+    <link rel="stylesheet" href="../public/stylesheets/index.css">
+</head>
+
+<body>
+  <header>
+    <nav class="navbar navbar-expand-lg mt-3 mb-5" style="padding-left: 1.5rem; padding-right: 1.5rem;">
+      <div class="container">
+        <a class="navbar-brand" href="#"><img src="../public/images/logo.png" alt="logo"></a>
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+          <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse" id="navbarSupportedContent">
+          <ul class="navbar-nav me-auto mb-2 mb-lg-0 ms-3">
+            <li class="nav-item">
+              <a class="nav-link " href="/home">HOME</a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link " href="#">FOLLOWING</a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link " href="">LIVE</a>
+            </li>
+
+          </ul>
+          <form class="col-lg-4 mx-lg-auto  " id="search" role="search">
+            <div class=" input-group">
+              <div id="search" class="form-outline col-md-5 col-lg-6 col-xl-7">
+                <input type="search" id="form1" class="form-control" placeholder="Search" />
+              </div>
+              <div>
+                <button type="button" class="btn btn-primary" id="search-button">
+                  <img src="../public/images/search-icon.png" alt="search" style="width: 1.4rem; height:1.4rem">
+                </button>
+              </div>
+            </div>
+          </form>
+
+          <div class="me-4 justify-content-end">
+            <a href="upload-video.html">
+              <img src="../public/images/upload.png" alt="avatar" class="img-fluid  me-3 shadow" width="30">
+            </a>
+            <a href="start-stream.html">
+              <img src="../public/images/go-live.png" alt="avatar" class="img-fluid me-3 shadow" width="35">
+            </a>
+            <a>
+              <img src="../public/images/default-pp.png" alt="avatar" class="img-fluid rounded-circle shadow" width="45">
+            </a>
+
+          </div>
+        </div>
+      </div>
+    </nav>
+  </header>
+  <main>
+    <div class="row p-2 ps-5">
+      <div class="col-lg-8">
+        <div class="row">
+          <div class="d-flex video-container justify-content-center" id="background-div">
+          <video class="rounded" width="100%" height="100%" onplay="lockVideo(); showAlert();" id="LiveVideo" controls>
+            <source src="<%= video_url %>" type="video/mp4">
+          </video>
+          </div>
+        </div>
+        <div class="row">
+          <h3 class="text-white mt-3"><%= video.video_title%></h3>
+          <h5 class="text-white"><%= video.video_description %></h5>    
+        <div class="d-flex">
+          <img src="../public/images/default-pp.png" alt="pfp" class="rounded-circle me-2" style="width: 4rem">
+          <h5 class="text-white mt-3"><%= video.username %></h5>
+        </div>
+      </div>
+    </div>
+    </div>
+    
+  </main>
+  <footer>
+    <!-- place footer here -->
+  </footer>
+  <!-- Bootstrap JavaScript Libraries -->
+  <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.6/dist/umd/popper.min.js"
+    integrity="sha384-oBqDVmMz9ATKxIep9tiCxS/Z9fNfEXiDAYTujMAeBAsjFuCZSmKbSSUnQlmh/jp3" crossorigin="anonymous">
+  </script>
+
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.1/dist/js/bootstrap.min.js"
+    integrity="sha384-7VPbUDkoPSGFnVtYi0QogXtr74QeVeeIs99Qfg5YCF+TidwNdjvaKZX19NZ/e6oz" crossorigin="anonymous">
+  </script>
+</body>
+
+</html>

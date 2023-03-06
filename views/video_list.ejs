@@ -2,48 +2,115 @@
 <html lang="en">
 
 <head>
-  <title>Title</title>
-  <!-- Required meta tags -->
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <title>Title</title>
+    <!-- Required meta tags -->
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
 
-  <!-- Bootstrap CSS v5.2.1 -->
-  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.1/dist/css/bootstrap.min.css" rel="stylesheet"
-    integrity="sha384-iYQeCzEYFbKjA/T2uDLTpkwGzCiq6soy8tYaI1GyVh/UjpbCx/TYkiZhlZB6+fzT" crossorigin="anonymous">
-
+    <!-- Bootstrap CSS v5.2.1 -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.1/dist/css/bootstrap.min.css" rel="stylesheet"
+        integrity="sha384-iYQeCzEYFbKjA/T2uDLTpkwGzCiq6soy8tYaI1GyVh/UjpbCx/TYkiZhlZB6+fzT" crossorigin="anonymous">
+        <link rel="stylesheet" href="../public/stylesheets/index.css">
+       
 </head>
 
 <body>
-  <header>
-    <!-- place navbar here -->
-  </header>
-  <main>
-    <div class="row">
-    <% for (let i=0; i<videos.length; i++){ %>
-      <a href=""><div class="col-4">
-        <div class="card">
-          <div class="card-body" >
-            <h3 class="card-title" >Title</h3>
-            <p class="card-text" ">Text</p>
-            <video src="<%= videos[i].video_url %>">
+    <header>
+        <nav class="navbar navbar-expand-lg mt-3 mb-5" style="padding-left: 1.5rem; padding-right: 1.5rem;">
+            <div class="container">
+              <a class="navbar-brand" href="#"><img src="../public/images/logo.png" alt="logo"></a>
+              <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+              </button>
+              <div class="collapse navbar-collapse" id="navbarSupportedContent">
+                <ul class="navbar-nav me-auto mb-2 mb-lg-0 ms-3">
+                  <li class="nav-item">
+                    <a class="nav-link " href="Home.html">HOME</a>
+                  </li>
+                  <li class="nav-item">
+                    <a class="nav-link " href="#">FOLLOWING</a>
+                  </li>
+                  <li class="nav-item">
+                    <a class="nav-link " href="live.html">LIVE</a>
+                  </li>
+                 
+                </ul>
+                <form class="col-lg-4 mx-lg-auto  " id="search" role="search">
+                  <div class=" input-group">
+                    <div id="search" class="form-outline col-md-5 col-lg-6 col-xl-7">
+                      <input type="search" id="form1" class="form-control" placeholder="Search"/>
+                    </div>
+                    <div>
+                    <button type="button" class="btn btn-primary" id="search-button">
+                      <img src="../public/images/search-icon.png" alt="search" style="width: 1.4rem; height:1.4rem">
+                    </button>
+                    </div>
+                  </div>
+                </form>
+               
+                <div class="me-4 justify-content-end">
+                <a href="upload-video.html">
+                    <img src="../public/images/upload.png" alt="avatar" class="img-fluid  me-3 shadow" width="30">
+                  </a>
+                  <a href="start-stream.html">
+                    <img src="../public/images/go-live.png" alt="avatar" class="img-fluid me-3 shadow" width="35">
+                  </a>
+                  <a >
+                    <img src="../public/images/default-pp.png" alt="avatar" class="img-fluid rounded-circle shadow" width="45">
+                  </a>
+                  
+                </div>
+              </div>
             </div>
-        </div></a>
-        
+          </nav>
+    </header>
+    <main>
+      <div class="container ">
+        <div class="row mb-2">
+            <img src="" alt="">
+        </div>
+        <div class="row">
+          <h5><span style="color: #FFB800;">Videos </span><span class="text-white">we think you'll like</span></h5>
+          
+        </div>
+        <div class="row row-cols-1 row-cols-sm-2 row-cols-md-3 row-cols-lg-4 ">
+          
+          <% videos.forEach(video=> { %>
+              <div class="col mb-4">
+                  <a href="/play/<%= video.video_id %>">
+                  <div class="card shadow-sm bg-dark" style="width: 18rem;">
+                      <img class="card-img-top" src="<%= video.thumbnail_url %>" alt="Thumbnail">
+                      <div class="card-body h-100">
+                          <h5 class="card-title fw-bold text-truncate text-white"><%= video.video_title %></h5>
+                          <div class="row">
+                            <div class="col">
+                              <a href="/profile/<%= video.username  %>">
+                          <p class="card-text text-muted text-start text-white"><%= video.username %></p>
+                        </a>
+                        </div>
+                        <div class="col">
+                          <p class="card-text text-muted fs-6 text-white">• <%= video.elapsed %></p>
+                        </div>
+                          </div>
+                      </div>
+                  </div>
+                  </a>
+              </div>
+          <% }) %>
       </div>
-      <% } %>
     </div>
-  </main>
-  <footer>
-    <!-- place footer here -->
-  </footer>
-  <!-- Bootstrap JavaScript Libraries -->
-  <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.6/dist/umd/popper.min.js"
-    integrity="sha384-oBqDVmMz9ATKxIep9tiCxS/Z9fNfEXiDAYTujMAeBAsjFuCZSmKbSSUnQlmh/jp3" crossorigin="anonymous">
-  </script>
+    </main>
+    <footer>
+        <!-- place footer here -->
+    </footer>
+    <!-- Bootstrap JavaScript Libraries -->
+    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.6/dist/umd/popper.min.js"
+        integrity="sha384-oBqDVmMz9ATKxIep9tiCxS/Z9fNfEXiDAYTujMAeBAsjFuCZSmKbSSUnQlmh/jp3" crossorigin="anonymous">
+        </script>
 
-  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.1/dist/js/bootstrap.min.js"
-    integrity="sha384-7VPbUDkoPSGFnVtYi0QogXtr74QeVeeIs99Qfg5YCF+TidwNdjvaKZX19NZ/e6oz" crossorigin="anonymous">
-  </script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.1/dist/js/bootstrap.min.js"
+        integrity="sha384-7VPbUDkoPSGFnVtYi0QogXtr74QeVeeIs99Qfg5YCF+TidwNdjvaKZX19NZ/e6oz" crossorigin="anonymous">
+        </script>
 </body>
 
 </html>

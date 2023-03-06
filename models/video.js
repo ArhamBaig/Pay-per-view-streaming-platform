@@ -9,7 +9,7 @@ const videoSchema = new Schema({
     type: String,
     required: true,
   },
-  channel_name: {
+  username: {
     type: String,
     require: true
   },
@@ -22,11 +22,23 @@ const videoSchema = new Schema({
     type: String,
     require: true
   },
+  thumbnail_name: {
+    type: String,
+    require: true
+  },
   video_url: {
-    type: String
+    type: String,
+    require:true
+  },
+  thumbnail_url: {
+    type:String,
+    require: true
+  },
+  createdAt: {
+    type: Date,
   }
-
 });
+
 
 
  module.exports = mongoose.model("Video", videoSchema);
