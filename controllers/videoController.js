@@ -3,7 +3,7 @@ const crypto = require('crypto');
 const VideoThumbnailGenerator = require('video-thumbnail-generator').default;
 const fs = require('fs');
 const video = require("../models/video");
-
+const stream = require('../models/liveStream');
 
 const { S3Client, PutObjectCommand, GetObjectCommand } = require('@aws-sdk/client-s3');
 const { getSignedUrl } = require("@aws-sdk/s3-request-presigner");
@@ -17,6 +17,11 @@ const bucketRegion = process.env.AWS_BUCKET_REGION;
 const accessKey = process.env.AWS_ACCESS_KEY;
 const secretAccessKey = process.env.AWS_SECRET_KEY;
 
+const bucketName2 = 'livemg-stream-tn';
+const bucketRegion2 = `me-south-1`;
+const accessKey2 = `AKIAVIGNE2FG6DLOWETN`;
+const secretAccessKey2 = `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`;
+
 const s3 = new S3Client({
   credentials: {
     accessKeyId: accessKey,
@@ -25,11 +30,18 @@ const s3 = new S3Client({
   region: bucketRegion,
 });
 
+const stream_s3 = new S3Client({
+  credentials:{
+    accessKeyId: accessKey2,
+    secretAccessKey: secretAccessKey2
+  },
+  region: bucketRegion2
+})
 
 exports.videos_get = async (req, res) => {
   const videos = await video.find({})
-
-
+  const streams = await stream.find({})
+  console.log(streams)
 
   const error = req.session.error;
   delete req.session.error;
@@ -50,28 +62,64 @@ exports.videos_get = async (req, res) => {
         Key: video.thumbnail_name
       }),
     );
+
+    
+
     const elapsed = moment(video.createdAt).fromNow();
     video.elapsed = elapsed;
-
     video.save();
   };
-  res.render("video_list", { videos: videos, err: error });
+
+  for (let stream of streams){
+    stream.streamUrl = await getSignedUrl(
+      stream_s3,
+      new GetObjectCommand({
+        Bucket: bucketName2,
+        Key: `${stream.streamKey}_720p.jpg`
+      })
+    )
+    stream.save();
+  }
+  
+
+ 
+
+  res.render("home", { videos: videos, err: error, streams: streams });
 };
 
 exports.video_play_get = async (req, res) => {
   const videoID = req.params.video_id;
   const video_target = await video.findOne({ video_id: videoID });
 
-  const videoUrl = await getSignedUrl(
-    s3,
-    new GetObjectCommand({
-      Bucket: bucketName,
-      Key: video_target.video_id
-    })
-  )
-  
-  res.render('play', { video_url: videoUrl, video: video_target});
-
+  // if (video_target.video_status === "paid") {
+  //   // Video is paid, lock the video and show alert
+  //   function lockVideo() {
+  //     var video = document.getElementById("LiveVideo");
+  //     video.style.filter = "blur(5px)";
+  //     video.pause();
+  //     video.removeAttribute("controls");
+  //   }
+    
+  //   function showAlert() {
+  //     let title= "please pay to proceed"
+  //     var alertBox = document.getElementById("foreground-div");
+  //     alertBox.style.display = "block"
+  //   }
+    
+  //   lockVideo();
+  //   showAlert();
+  //   res.render('play', { video_url: null, video: video_target });
+  // } else {
+    // Video is free, get signed URL and render the play page
+    const videoUrl = await getSignedUrl(
+      s3,
+      new GetObjectCommand({
+        Bucket: bucketName,
+        Key: video_target.video_id
+      })
+    )
+    res.render('play', { video_url: videoUrl, video: video_target });
+  // }
 }
 
 exports.video_upload_get = (req, res) => {
@@ -127,7 +175,7 @@ exports.video_upload_post = async (req, res) => {
     ContentType: 'image/png'
   };
 
-
+  
   const video_command = new PutObjectCommand(videoParams)
   const image_command = new PutObjectCommand(imageParams)
 
@@ -137,6 +185,8 @@ exports.video_upload_post = async (req, res) => {
     video_id: video_id,
     video_title: req.body.title,
     video_description: req.body.description,
+    video_status: req.body.status,
+    price: req.body.price,
     thumbnail_name: `${thumbnail_name}-thumbnail-1280x720-0001.png`,
     createdAt: Date.now()
   });

@@ -1,19 +1,28 @@
+//libraries
 const express = require('express');
 const session = require('express-session');
 const bodyParser = require('body-parser');
 const path = require('path');
 const config = require("config");
 const mongodbsession = require('connect-mongodb-session')(session);
+
+//controllers
 const userController = require("./controllers/userController");
-const uploadMiddleware = require("./middleware/multer");
-
-const isAuth = require("./middleware/isAuth");
 const videoController = require("./controllers/videoController");
-const app = express();
+const liveStreamController = require('./controllers/liveStreamController');
 
+//middleware
+const uploadMiddleware = require("./middleware/multer");
+const isAuth = require("./middleware/isAuth");
+const cardMiddleware = require("./middleware/card_info")
+
+//mongodb connection
 const connectDB = require("./config/db");
 const port = 3000;
 const mongoURI = config.get("mongoURI");
+
+const app = express();
+
 connectDB();
 
 const store = new mongodbsession({
@@ -44,20 +53,32 @@ app.use('/public/images', express.static(path.join(__dirname, 'public/images')))
 app.get("/login", userController.login_get);
 app.post("/login", userController.login_post);
 
-// Register Page
+// Signup Page
 app.get("/signup", userController.register_get);
 app.post("/signup", userController.register_post);
 app.post("/logout", userController.logout_post);
 
-// app.get("/videos",isAuth,videoController.videos_get);
+//upload videos to s3
 app.get("/upload",isAuth,videoController.video_upload_get);
-app.post("/upload",isAuth,uploadMiddleware.single('video'),videoController.video_upload_post);
+app.post("/upload",isAuth,uploadMiddleware.single('video'),cardMiddleware,videoController.video_upload_post);
 
-app.get("/video_list",isAuth,videoController.videos_get);
+//get videos from s3
+// app.get("/video_list",isAuth,videoController.videos_get);
 app.get("/play/:video_id",isAuth,videoController.video_play_get);
-app.get("/profile/:username",videoController.profile_get);
-app.get("/home",isAuth,userController.home_get);
 
+//live stream through OBS
+app.get("/live",isAuth,liveStreamController.live_get);
+app.get("/liveStream/:username",isAuth,liveStreamController.liveStream_get);
+
+//user profile
+app.get("/profile/:username",videoController.profile_get);
+app.get("/home",isAuth,videoController.videos_get);
+
+
+app.get("/credit",isAuth,userController.card_info_get);
+app.post("/credit",isAuth,userController.card_info_post);
+
+// app.get('/test',isAuth,liveStreamController.allStreams_get);
 app.listen(port, () => console.log(`Listening on port ${port}..`));
 
 module.exports = app;

@@ -11,34 +11,99 @@
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.1/dist/css/bootstrap.min.css" rel="stylesheet"
     integrity="sha384-iYQeCzEYFbKjA/T2uDLTpkwGzCiq6soy8tYaI1GyVh/UjpbCx/TYkiZhlZB6+fzT" crossorigin="anonymous">
   <link rel="stylesheet" href="/css/upload-video.css">
-
+  <link rel="stylesheet" href="../public/stylesheets/index.css">
 </head>
 
 <body>
+<header>
+  <nav class="navbar navbar-expand-lg mt-3 mb-5" style="padding-left: 1.5rem; padding-right: 1.5rem;">
+    <div class="container">
+      <a class="navbar-brand" href="#"><img src="../public/images/logo.png" alt="logo"></a>
+      <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+        <span class="navbar-toggler-icon"></span>
+      </button>
+      <div class="collapse navbar-collapse" id="navbarSupportedContent">
+        <ul class="navbar-nav me-auto mb-2 mb-lg-0 ms-3">
+          <li class="nav-item">
+            <a class="nav-link " href="/home">HOME</a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link " href="#">FOLLOWING</a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link " href="">LIVE</a>
+          </li>
 
+        </ul>
+        <form class="col-lg-4 mx-lg-auto  " id="search" role="search">
+          <div class=" input-group">
+            <div id="search" class="form-outline col-md-5 col-lg-6 col-xl-7">
+              <input type="search" id="form1" class="form-control" placeholder="Search" />
+            </div>
+            <div>
+              <button type="button" class="btn btn-primary" id="search-button">
+                <img src="../public/images/search-icon.png" alt="search" style="width: 1.4rem; height:1.4rem">
+              </button>
+            </div>
+          </div>
+        </form>
+
+        <div class="me-4 justify-content-end">
+          <a href="upload-video.html">
+            <img src="../public/images/upload.png" alt="avatar" class="img-fluid  me-3 shadow" width="30">
+          </a>
+          <a href="start-stream.html">
+            <img src="../public/images/go-live.png" alt="avatar" class="img-fluid me-3 shadow" width="35">
+          </a>
+          <a>
+            <img src="../public/images/default-pp.png" alt="avatar" class="img-fluid rounded-circle shadow" width="45">
+          </a>
+
+        </div>
+      </div>
+    </div>
+  </nav>
+</header>
   <main>
+    <div class="container">
+      <form action="/upload" method="POST" enctype="multipart/form-data" class="row g-3">
 
-    <div>
-      <form action="/upload" method="POST" enctype="multipart/form-data" >
-
-        <br>
-        <div>
-          <label>select Video:</label>
-          <input type="file" name="video" accept="video/*" required>
+        <div class="col-md-6">
+          <label for="video" class="form-label">Select Video:</label>
+          <input type="file" name="video" accept="video/*" required class="form-control" id="video">
         </div>
-        <div>
-          <label>Enter Video Title:</label>
-          <input type="text" name="title" required >
+      
+        <div class="col-md-6">
+          <label for="title" class="form-label">Enter Video Title:</label>
+          <input type="text" name="title" required class="form-control" id="title">
         </div>
-        <div>
-          <label>Enter Video description:</label>
-          <input type="text" name="description" required>
+      
+        <div class="col-md-12">
+          <label for="description" class="form-label">Enter Video description:</label>
+          <input type="text" name="description" required class="form-control" id="description">
         </div>
-        
-        <br>
-        <button>Upload</button>
+      
+        <div class="col-md-6">
+          <label for="status" class="form-label">Is the video paid?</label>
+          <select class="form-select" name="status" id="status">
+            <option value="free">Free</option>
+            <option value="paid">Paid</option>
+          </select>
+        </div>
+      
+        <div class="col-md-6">
+          <label for="amount" class="form-label">Amount (if paid):</label>
+          <div class="input-group">
+            <span class="input-group-text">$</span>
+            <input type="number" name="price" class="form-control" id="amount" step="0.01" min="0" >
+          </div>
+        </div>
+      
+        <div class="col-12">
+          <button type="submit" class="btn btn-primary">Upload</button>
+        </div>
+      
       </form>
-
     </div>
 
   </main>
@@ -53,6 +118,22 @@
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.1/dist/js/bootstrap.min.js"
     integrity="sha384-7VPbUDkoPSGFnVtYi0QogXtr74QeVeeIs99Qfg5YCF+TidwNdjvaKZX19NZ/e6oz" crossorigin="anonymous">
     </script>
-  <!-- <script src="start-stream.js"></script> -->
+<script>
+  var statusField = document.getElementById("status");
+  var amountField = document.getElementById("amount");
+  
+  statusField.addEventListener("change", function() {
+    amountField.disabled = (this.value === "free");
+    if (this.value === "free") {
+      amountField.value = "";
+    }
+    amountField.required = (this.value === "paid");
+  });
+
+  // disable the amount field on page load if the status is "free"
+  if (statusField.value === "free") {
+    amountField.disabled = true;
+  }
+</script>
 </body>
 </html>

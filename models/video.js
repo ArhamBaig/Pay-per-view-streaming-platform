@@ -26,6 +26,15 @@ const videoSchema = new Schema({
     type: String,
     require: true
   },
+  video_status: {
+    type: String,
+    enum: ['paid','free'],
+    require: true
+  }, 
+  price:{ 
+  type: Number, 
+  default: 0 
+  },
   video_url: {
     type: String,
     require:true
@@ -36,10 +45,19 @@ const videoSchema = new Schema({
   },
   createdAt: {
     type: Date,
+  },
+  video_token: {
+    type:String
   }
 });
 
-
+videoSchema.pre('save', function(next) {
+  if (this.video_status === 'paid' && !this.video_token) {
+    // Generate video token using shortid
+    this.video_token = shortid.generate();
+  }
+  next();
+});
 
  module.exports = mongoose.model("Video", videoSchema);
 

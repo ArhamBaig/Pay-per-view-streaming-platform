@@ -1,7 +1,11 @@
 const bcrypt = require("bcryptjs");
-const { S3Client, PutObjectCommand, GetObjectCommand } = require('@aws-sdk/client-s3');
-const { getSignedUrl } = require("@aws-sdk/s3-request-presigner");
 const User = require("../models/User");
+const shortid = require("shortid");
+const dotenv = require('dotenv');
+
+dotenv.config();
+
+const stripe = require('stripe')(process.env.STRIPE_SECRET_KEY);
 
 exports.home_page = (req,res)=>{
   res.render("home");
@@ -77,6 +81,25 @@ exports.register_post = async (req, res) => {
   res.render("login",{err: error});
 };
 
+exports.live_get = async(req,res) => {
+  const user_target = await User.findOne({username: req.session.username})
+  console.log(user_target)  
+  if (!user_target.streamKey){
+    user_target.streamKey = shortid.generate();
+    user_target.save();
+  }
+  const streamKey = user_target.streamKey;
+
+  res.render("live" ,{streamKey: streamKey})
+}
+
+exports.live_video_get = async(req,res) => {
+  const user_target = await User.findOne({username: req.params.username})
+  const streamKey = user_target.streamKey;
+
+  res.render("live_video" ,{streamKey: streamKey, username: user_target.username})
+}
+
 exports.home_get = (req, res) => {
   const username = req.session.username;
   res.render("home", { name: username });
@@ -89,40 +112,31 @@ exports.logout_post = (req, res) => {
   });
 };
 
+exports.card_info_get = (req,res)=>{
+  res.render('credit')
+}
 
-// exports.channel_get = (req, res) => {
-//   const error = req.session.error;
-//   delete req.session.error;
-//   res.render("channel",{err:error});
-// };
-
-// exports.channel_post = async (req, res) => {
-//   const { channel_name } = req.body;
-//   const user_id = req.session.user_id;
-  
-//   try {
-//     const user = await User.findOne({ user_id });
-//       console.log(user)
-
-//       // Check if the creator name already exists in the database
-//       const existingName = await User.findOne({ channel_name });
-
-//       if (existingName) {
-//           req.session.error = "Channel name already exists.";
-//           return res.redirect("/channel");
-//       }
-//       console.log(channel_name);
-//       user.channel_name = channel_name;
-
-//       console.log(user);
-//       await user.save();
-//       req.session.success = "Channel name saved successfully";
-//       req.session.isAuth = true;
-//       req.session.channel_name = user.channel_name;
-//       res.redirect("/home");
-//       }
-//       catch (err) {
-//           req.session.error = err.message;
-//           res.redirect("/channel");
-//         }
-//       };
+exports.card_info_post = async (req,res)=>{
+  try {
+    const { name, cardNumber, expDate,  cvc, address } = req.body;
+    const customer = await stripe.customers.create({
+      name,
+      email,
+      source: {
+        object: 'card',
+        number: cardNumber,
+        exp_date: expDate,
+        cvc: cvc,
+        address: address
+      }
+    })
+    const target_user = User.find({username: req.session.username});
+    target_user.card_status = customer.id;
+    await target_user.save()
+    res.status(201).send('Creator added successfully');
+  }
+ catch (err) {
+  console.error(err);
+  res.status(500).send('Server error');
+}
+}

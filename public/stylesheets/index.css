@@ -17,8 +17,11 @@ a.nav-link{
 
 body{
     background-color: #007092;
+    color: white
+    ;
 }
 
 .btn{
     background-color: #FFB800;
 }
+
