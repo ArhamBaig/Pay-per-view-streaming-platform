@@ -1,537 +1,141 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
 
 <head>
-  <meta charset="UTF-8">
-  <meta http-equiv="X-UA-Compatible" content="IE=edge">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>StreamMG</title>
-  <!-- 
-    - favicon
-  -->
-  <link rel="shortcut icon" href="/images/logo.png" type="image/svg+xml">
+    <title>Title</title>
+    <!-- Required meta tags -->
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
 
-  <!-- 
-    - custom css link
-  -->
-  <link rel="stylesheet" href="../public/stylesheets/home.css">
-
-  <!-- 
-    - google font link
-  -->
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <!-- Bootstrap CSS v5.2.1 -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.1/dist/css/bootstrap.min.css" rel="stylesheet"
+        integrity="sha384-iYQeCzEYFbKjA/T2uDLTpkwGzCiq6soy8tYaI1GyVh/UjpbCx/TYkiZhlZB6+fzT" crossorigin="anonymous">
+        <link rel="stylesheet" href="../public/stylesheets/index.css">
+       
 </head>
 
-<body id="top">
-
-  <!-- 
-    - #HEADER
-  -->
-
-  <header class="header" data-header>
-    <div class="container">
-
-      <div class="overlay" data-overlay></div>
-
-      <a href="./Home.html" class="logo">
-        <img src="/images/logo.png" alt="Streamy logo">
-      </a>
-
-      <div class="header-actions">
-        <div class="lang-wrapper">
-          <label for="language">
-            <ion-icon name="globe-outline"></ion-icon>
-          </label>
-
-          <select name="language" id="language">
-            <option value="en">EN</option>
-            <option value="au">AU</option>
-            <option value="ar">AR</option>
-            <option value="tu">TU</option>
-          </select>
+<body>
+    <header>
+        <nav class="navbar navbar-expand-lg mt-3 mb-5" style="padding-left: 1.5rem; padding-right: 1.5rem;">
+            <div class="container">
+              <a class="navbar-brand" href="#"><img src="../public/images/logo.png" alt="logo"></a>
+              <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+              </button>
+              <div class="collapse navbar-collapse" id="navbarSupportedContent">
+                <ul class="navbar-nav me-auto mb-2 mb-lg-0 ms-3">
+                  <li class="nav-item">
+                    <a class="nav-link " href="Home.html">HOME</a>
+                  </li>
+                  <li class="nav-item">
+                    <a class="nav-link " href="#">FOLLOWING</a>
+                  </li>
+                  <li class="nav-item">
+                    <a class="nav-link " href="live.html">LIVE</a>
+                  </li>
+                 
+                </ul>
+                <form class="col-lg-4 mx-lg-auto  " id="search" role="search">
+                  <div class=" input-group">
+                    <div id="search" class="form-outline col-md-5 col-lg-6 col-xl-7">
+                      <input type="search" id="form1" class="form-control" placeholder="Search"/>
+                    </div>
+                    <div>
+                    <button type="button" class="btn btn-primary" id="search-button">
+                      <img src="../public/images/search-icon.png" alt="search" style="width: 1.4rem; height:1.4rem">
+                    </button>
+                    </div>
+                  </div>
+                </form>
+               
+                <div class="me-2 justify-content-end">
+                <a href="upload-video.html">
+                    <img src="../public/images/upload.png" alt="avatar" class="img-fluid  me-3 shadow" width="30">
+                  </a>
+                  <a href="start-stream.html">
+                    <img src="../public/images/go-live.png" alt="avatar" class="img-fluid me-3 shadow" width="35">
+                  </a>
+                  <a >
+                    <img src="../public/images/default-pp.png" alt="avatar" class="img-fluid rounded-circle shadow" width="45">
+                  </a>
+                  
+                </div>
+              </div>
+            </div>
+          </nav>
+    </header>
+    <main>
+      <div class="container" style="width: 120%;">
+        
+        <div class="row mb-2">
+          <img src="" alt="">
         </div>
-
-        <a href="/content-creator"><button class="btn btn-primary">Become a creator!</button></a>
-        <h1><%=name%></h1>
-        <form action="/logout" method="POST">
-        <button class="btn btn-secondary">LOGOUT</button>
-      </form>
-        <!-- onclick="functionName()" -->
+        
+        <div class="row">
+          <h5><span style="color: #FFB800;">Live Streams </span><span class="text-white">we think you'll like</span></h5>
+        </div>
+        <div class="row d-flex flex-wrap">
+          <% streams.forEach(stream=> { %>
+          <div class="col mb-4">
+            <a href="/liveStream/<%= stream.username %>">
+              <div class="card shadow-sm bg-dark" style="width: 18rem;">
+                <span class="badge bg-danger position-absolute top-1 end-0">Live</span>
+                <img class="card-img-top" src="<%= stream.streamUrl %>" alt="Thumbnail">
+                <div class="card-body h-100">
+                  <h5 class="card-title fw-bold text-truncate text-white"><%= stream.username %></h5>
+                  </div>
+              </div>
+            </a>
+          </div>
+          <% }) %>
+        </div>
+        
+        <div class="row">
+          <h5><span style="color: #FFB800;">Videos </span><span class="text-white">we think you'll like</span></h5>
+        </div>
+        <div class="row d-flex flex-wrap">
+          <% videos.forEach(video=> { %>
+            <div class="col mb-4">
+              <a href="/play/<%= video.video_id %>">
+                <div class="card shadow-sm bg-dark" style="width: 18rem;">
+                  <% if(video.status === "paid") { %>
+                    <div class="card-img-overlay d-flex justify-content-center align-items-center" style="background-color: rgba(0, 0, 0, 0.5);">
+                      <h3 class="text-white">Locked</h3>
+                    </div>
+                  <% } %>
+                  <img class="card-img-top<% if(video.status === "paid") { %> blurred<% } %>" src="<%= video.thumbnail_url %>" alt="Thumbnail">
+                  <div class="card-body h-100">
+                    <h5 class="card-title fw-bold text-truncate text-white"><%= video.video_title %></h5>
+                    <div class="row">
+                      <div class="col">
+                        <a href="/profile/<%= video.username %>">
+                          <p class="card-text text-muted text-start text-white"><%= video.username %></p>
+                        </a>
+                      </div>
+                      <div class="col">
+                        <p class="card-text text-muted fs-6 text-white">• <%= video.elapsed %></p>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </a>
+            </div>
+          <% }) %>
+        </div>
       </div>
-
-      <button class="menu-open-btn" data-menu-open-btn>
-        <ion-icon name="reorder-two"></ion-icon>
-      </button>
-
-      <nav class="navbar" data-navbar>
-
-        <div class="navbar-top">
-
-          <a href="./Home.html" class="logo">
-            <img src="/images/logo.png" alt=" logo">
-          </a>
-
-          <button class="menu-close-btn" data-menu-close-btn>
-            <ion-icon name="close-outline"></ion-icon>
-          </button>
-
-        </div>
-
-        <ul class="navbar-list">
-
-          <div class="collapse navbar-collapse" id="navbarSupportedContent">
-            <div class="menu-main-menu-container">
-              <ul id="top-menu" class="navbar-nav ml-auto">
-                <li class="menu-item"><a href="#">Home</a></li>
-                <li class="menu-item"><a href="live.html">Live</a></li>
-                <li class="menu-item"><a href="#">Shows</a></li>
-                <li class="menu-item">
-                  <a href="#">Following</a>
-                  <ul class="sub-menu">
-                    <li class="menu-item"><a href="video.html">Channel</a></li>
-                    <li class="menu-item"><a href="#">Manage Profile</a></li>
-                    <li class="menu-item"><a href="price.html">Pricing</a></li>
-                    <li class="menu-item">
-                      <a href="#">Privacy-Policy</a>
-                    </li>
-
-                </li>
-              </ul>
-              </li>
-        </ul>
-    </div>
-    </div>
-
-    </ul>
-
-    <ul class="navbar-social-list">
-
-      <li>
-        <a href="#" class="navbar-social-link">
-          <ion-icon name="logo-twitter"></ion-icon>
-        </a>
-      </li>
-
-      <li>
-        <a href="#" class="navbar-social-link">
-          <ion-icon name="logo-facebook"></ion-icon>
-        </a>
-      </li>
-
-      <li>
-        <a href="#" class="navbar-social-link">
-          <ion-icon name="logo-pinterest"></ion-icon>
-        </a>
-      </li>
-
-      <li>
-        <a href="#" class="navbar-social-link">
-          <ion-icon name="logo-instagram"></ion-icon>
-        </a>
-      </li>
-
-      <li>
-        <a href="#" class="navbar-social-link">
-          <ion-icon name="logo-youtube"></ion-icon>
-        </a>
-      </li>
-
-    </ul>
-
-    </nav>
-
-    </div>
-  </header>
-
-  <main>
-    <article>
-
-      <!-- 
-        - #HERO
-      -->
-      <!-- 
-      <section class="hero">
-        <div class="container">
-
-          
-
-        </div>
-      </section> -->
-
-
-
-
-
-      <!-- 
-        - #SERVICE
-      -->
-
-      <section class="service">
-        <div class="container">
-
-          <div class="service-banner">
-            <figure>
-              <img src="/images/homeimg.jpg"
-                alt="HD 4k resolution! only $3.99">
-            </figure>
-
-            <!-- <a href="./assets/images/service-banner.png" download class="service-btn">
-              <span>Download</span> -->
-            <!-- <ion-icon name="download-outline"></ion-icon> -->
-            <!-- </a> -->
-          </div>
-
-          <div class="service-content">
-
-            <p class="service-subtitle">Our Services</p>
-
-            <h2 class="h2 service-title">Stream Exclusive Content</h2>
-
-            <p class="service-text">
-              Watch content from your favourite creators by simply paying for the royalty. Show some love to your
-              favourite creators
-            </p>
-
-            <ul class="service-list">
-
-              <li>
-                <div class="service-card">
-
-                  <div class="card-icon">
-                    <ion-icon name="tv"></ion-icon>
-                  </div>
-
-                  <div class="card-content">
-                    <h3 class="h3 card-title">Enjoy streaming anywhere</h3>
-
-                    <p class="card-text">
-                      Watch the content anywhere by simply logging in and playing the video you want to watch.
-                    </p>
-                  </div>
-
-                </div>
-              </li>
-              <li>
-                <div class="service-card">
-
-                  <div class="card-icon">
-                    <ion-icon name="videocam"></ion-icon>
-                  </div>
-                  <div class="card-content">
-                    <h3 class="h3 card-title">Be a creator</h3>
-                    <p class="card-text">
-                      Upload your content and set prices to monetize your content as well.
-                    </p>
-                  </div>
-
-                </div>
-              </li>
-
-            </ul>
-
-          </div>
-
-        </div>
-      </section>
-
-      <section class="tv-series">
-        <div class="container">
-
-          <p class="section-subtitle">Top creators</p>
-
-          <h2 class="h2 section-title">Top creators on our platform</h2>
-
-          <ul class="movies-list">
-
-            <li>
-              <div class="movie-card">
-
-                <a href="#">
-                  <figure class="card-banner">
-                    <img src="/images/creator1.jpg" alt="creator1">
-                  </figure>
-                </a>
-
-                <div class="title-wrapper">
-                  <a href="#">
-                    <h3 class="card-title">Junaid Akram</h3>
-                  </a>
-
-                  <time datetime="2022">2022</time>
-                </div>
-
-                <div class="card-meta">
-                  <div class="badge"><img class="homecaticon" src="/images/podcast.png"></div>
-
-                  <!-- <div class="duration"> -->
-                  <!-- <ion-icon name="time-outline"></ion-icon> -->
-
-                  <!-- <time datetime="PT47M">47 min</time> -->
-                  <!-- </div> -->
-
-                  <div class="rating">
-                    <ion-icon name="star"></ion-icon>
-
-                    <data>8.6</data>
-                  </div>
-                </div>
-
-              </div>
-            </li>
-
-            <li>
-              <div class="movie-card">
-
-                <a href="./movie-details.html">
-                  <figure class="card-banner">
-                    <img src="/images/creator2.jpg" alt="creator2">
-                  </figure>
-                </a>
-
-                <div class="title-wrapper">
-                  <a href="./movie-details.html">
-                    <h3 class="card-title">Muzamil Hasan</h3>
-                  </a>
-
-                  <time datetime="2022">2022</time>
-                </div>
-
-                <div class="card-meta">
-                  <div class="badge"><img class="homecaticon" src="/images/podcast.png"></div>
-                  <!-- <div class="duration">
-                    <ion-icon name="time-outline"></ion-icon>
-
-                    <time datetime="PT59M">59 min</time>
-                  </div> -->
-
-                  <div class="rating">
-                    <ion-icon name="star"></ion-icon>
-                    <data>8.8</data>
-                  </div>
-                </div>
-
-              </div>
-            </li>
-
-            <li>
-              <div class="movie-card">
-
-                <a href="./movie-details.html">
-                  <figure class="card-banner">
-                    <img src="/images/creator4.jpeg" alt="creator3">
-                  </figure>
-                </a>
-
-                <div class="title-wrapper">
-                  <a href="./movie-details.html">
-                    <h3 class="card-title">Andrew Tate</h3>
-                  </a>
-
-                  <time datetime="2022">2022</time>
-                </div>
-
-                <div class="card-meta">
-                  <div class="badge"><img class="homecaticon" src="/images/podcast.png"></div>
-
-                  <!-- <div class="duration">
-                    <ion-icon name="time-outline"></ion-icon>
-
-                    <time datetime="PT51M">51 min</time>
-                  </div> -->
-
-                  <div class="rating">
-                    <ion-icon name="star"></ion-icon>
-
-                    <data>8.3</data>
-                  </div>
-                </div>
-
-              </div>
-            </li>
-
-            <li>
-              <div class="movie-card">
-
-                <a href="./movie-details.html">
-                  <figure class="card-banner">
-                    <img src="/images/creator5.jpeg" alt="creator4">
-                  </figure>
-                </a>
-
-                <div class="title-wrapper">
-                  <a href="./movie-details.html">
-                    <h3 class="card-title">PewDiePie</h3>
-                  </a>
-
-                  <time datetime="2017">2017</time>
-                </div>
-
-                <div class="card-meta">
-                  <div class="badge"><img class="homecaticon" src="/images/gaming.png"></div>
-
-                  <!-- <div class="duration">
-                    <ion-icon name="time-outline"></ion-icon>
-
-                    <time datetime="PT70M">70 min</time>
-                  </div> -->
-                  <div class="rating">
-                    <ion-icon name="star"></ion-icon>
-                    <data>8.3</data>
-                  </div>
-                </div>
-              </div>
-            </li>
-          </ul>
-        </div>
-      </section>
-      <!-- 
-        - #CTA
-      -->
-
-      <section class="cta">
-        <div class="container">
-
-          <div class="title-wrapper">
-            <h2 class="cta-title">Join our platform and enjoy endless</h2>
-
-            <p class="cta-text">
-              Enter your email to create or restart your membership.
-            </p>
-          </div>
-
-          <form action="" class="cta-form">
-            <input type="email" name="email" required placeholder="Enter your email" class="email-field">
-
-            <button type="submit" class="cta-form-btn">Get started</button>
-          </form>
-
-        </div>
-      </section>
-
-    </article>
-  </main>
-
-
-
-
-
-  <!-- 
-    - #FOOTER
-  -->
-
-  <footer class="footer">
-
-    <div class="footer-top">
-      <div class="container">
-
-        <div class="footer-brand-wrapper">
-
-          <a href="./Home.html" class="logo">
-            <img src="/images/logo.png" alt="Streamy logo">
-          </a>
-
-          <ul class="footer-list">
-
-            <li>
-              <a href="./Home.html" class="footer-link">Home</a>
-            </li>
-
-            <li>
-              <a href="#" class="footer-link">Movie</a>
-            </li>
-
-            <li>
-              <a href="#" class="footer-link">TV Show</a>
-            </li>
-
-            <li>
-              <a href="#" class="footer-link">Web Series</a>
-            </li>
-
-            <li>
-              <a href="#" class="footer-link">Pricing</a>
-            </li>
-
-          </ul>
-
-        </div>
-
-        <div class="divider"></div>
-
-        <div class="quicklink-wrapper">
-
-
-
-          <ul class="social-list">
-
-            <li>
-              <a href="#" class="social-link">
-                <ion-icon name="logo-facebook"></ion-icon>
-              </a>
-            </li>
-
-            <li>
-              <a href="#" class="social-link">
-                <ion-icon name="logo-twitter"></ion-icon>
-              </a>
-            </li>
-
-            <li>
-              <a href="#" class="social-link">
-                <ion-icon name="logo-pinterest"></ion-icon>
-              </a>
-            </li>
-
-            <li>
-              <a href="#" class="social-link">
-                <ion-icon name="logo-linkedin"></ion-icon>
-              </a>
-            </li>
-
-          </ul>
-
-        </div>
-
-      </div>
-    </div>
-
-    </div>
-
-  </footer>
-
-
-
-
-
-  <!-- 
-    - #GO TO TOP
-  -->
-
-  <a href="#top" class="go-top" data-go-top>
-    <ion-icon name="chevron-up"></ion-icon>
-  </a>
-
-
-
-
-
-  <!-- 
-    - custom js link
-  -->
-  <script src="/js/script.js"></script>
-
-  <!-- 
-    - ionicon link
-  -->
-  <script type="module" src="https://unpkg.com/ionicons@5.5.2/dist/ionicons/ionicons.esm.js"></script>
-  <script nomodule src="https://unpkg.com/ionicons@5.5.2/dist/ionicons/ionicons.js"></script>
-  <script>
-// function functionName(){
-// window.open("login.html");
-// }
-  </script>
+      
+    </main>
+    <footer>
+        <!-- place footer here -->
+    </footer>
+    <!-- Bootstrap JavaScript Libraries -->
+    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.6/dist/umd/popper.min.js"
+        integrity="sha384-oBqDVmMz9ATKxIep9tiCxS/Z9fNfEXiDAYTujMAeBAsjFuCZSmKbSSUnQlmh/jp3" crossorigin="anonymous">
+        </script>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.1/dist/js/bootstrap.min.js"
+        integrity="sha384-7VPbUDkoPSGFnVtYi0QogXtr74QeVeeIs99Qfg5YCF+TidwNdjvaKZX19NZ/e6oz" crossorigin="anonymous">
+        </script>
 </body>
 
 </html>

@@ -11,7 +11,6 @@ const userSchema = new Schema({
     default: shortid.generate,
     unique: true
   },
-
   username: {
     type: String,
     required: true,
@@ -26,6 +25,12 @@ const userSchema = new Schema({
     type: String,
     required: true,
   },
+  streamKey: {
+    type: String
+  },
+  card_status: {
+    type: Boolean
+  }
 });
 
 
