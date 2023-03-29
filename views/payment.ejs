@@ -10,7 +10,7 @@
   <!-- Bootstrap CSS v5.2.1 -->
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.1/dist/css/bootstrap.min.css" rel="stylesheet"
     integrity="sha384-iYQeCzEYFbKjA/T2uDLTpkwGzCiq6soy8tYaI1GyVh/UjpbCx/TYkiZhlZB6+fzT" crossorigin="anonymous">
-    <link rel="stylesheet" href="../public/stylesheets/index.css">
+
 </head>
 
 <body>
@@ -64,56 +64,15 @@
     </nav>
   </header>
   <main>
-    <div class="row p-2 ps-5">
-      <div class="col-lg-8">
-        <div class="row">
-          <div class="d-flex video-container justify-content-center" id="background-div">
-            <% if (is_paid) { %>
-              <button class="btn btn-primary" id="payment">Pay with Ethereum</button>
-            <% } %>
-          <video class="rounded" width="100%" height="100%"  id="LiveVideo" <% if (is_paid) { %>oncanplay="onCanPlayHandler()"<% } else { %>controls<% } %>>
-            <source src="<%= video_url %>" type="video/mp4">
-          </video>
-          
-
-          </div>
-        </div>
-        <div class="row">
-          <h3 class="text-white mt-3"><%= video.video_title%></h3>
-          <h5 class="text-white"><%= video.video_description %></h5>    
-        <div class="d-flex">
-          <img src="../public/images/default-pp.png" alt="pfp" class="rounded-circle me-2" style="width: 4rem">
-          <h5 class="text-white mt-3"><%= video.username %></h5>
-        </div>
-      </div>
-    </div>
-    </div>
-    <script>
-      function lockVideo() {
-        let video = document.getElementById("LiveVideo");
-        video.style.filter = "blur(5px)";
-        video.pause();
-        video.removeAttribute("controls");
-      }
-
-      function showAlert() {
-        let title = "Please pay to proceed";
-        let alertBox = document.getElementById("alert-box");
-        alertBox.innerHTML = `<div class="alert alert-danger">${title}</div>`;
-        alertBox.style.display = "block";
-      }
-
-      function onCanPlayHandler() {
-        lockVideo();
-        showAlert();
-      }
-      </script>
+<div class="container">
+    <form action="/payment" method="POST">
+        <button type="submit" class="btn btn-primary">Submit</button>
+    </form>
+</div>
   </main>
   <footer>
     <!-- place footer here -->
   </footer>
-  
-
   <!-- Bootstrap JavaScript Libraries -->
   <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.6/dist/umd/popper.min.js"
     integrity="sha384-oBqDVmMz9ATKxIep9tiCxS/Z9fNfEXiDAYTujMAeBAsjFuCZSmKbSSUnQlmh/jp3" crossorigin="anonymous">
@@ -122,7 +81,6 @@
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.1/dist/js/bootstrap.min.js"
     integrity="sha384-7VPbUDkoPSGFnVtYi0QogXtr74QeVeeIs99Qfg5YCF+TidwNdjvaKZX19NZ/e6oz" crossorigin="anonymous">
   </script>
-  
 </body>
 
 </html>

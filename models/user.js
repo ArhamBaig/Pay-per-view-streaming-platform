@@ -28,9 +28,12 @@ const userSchema = new Schema({
   streamKey: {
     type: String
   },
-  card_status: {
-    type: Boolean
-  }
+  walletAddress: {
+    type: String,
+  },
+  video_tokens: [{
+    type: String
+  }]
 });
 
 

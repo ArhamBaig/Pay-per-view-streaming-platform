@@ -8,6 +8,7 @@ const stream = require('../models/liveStream');
 const { S3Client, PutObjectCommand, GetObjectCommand } = require('@aws-sdk/client-s3');
 const { getSignedUrl } = require("@aws-sdk/s3-request-presigner");
 const moment = require('moment');
+const user = require('../models/user');
 dotenv.config();
 
 const randomVideoName = () => crypto.randomBytes(32).toString('hex');
@@ -90,36 +91,19 @@ exports.videos_get = async (req, res) => {
 exports.video_play_get = async (req, res) => {
   const videoID = req.params.video_id;
   const video_target = await video.findOne({ video_id: videoID });
+  let is_paid = false;
 
-  // if (video_target.video_status === "paid") {
-  //   // Video is paid, lock the video and show alert
-  //   function lockVideo() {
-  //     var video = document.getElementById("LiveVideo");
-  //     video.style.filter = "blur(5px)";
-  //     video.pause();
-  //     video.removeAttribute("controls");
-  //   }
-    
-  //   function showAlert() {
-  //     let title= "please pay to proceed"
-  //     var alertBox = document.getElementById("foreground-div");
-  //     alertBox.style.display = "block"
-  //   }
-    
-  //   lockVideo();
-  //   showAlert();
-  //   res.render('play', { video_url: null, video: video_target });
-  // } else {
-    // Video is free, get signed URL and render the play page
-    const videoUrl = await getSignedUrl(
-      s3,
-      new GetObjectCommand({
+  if (video_target.video_status === "paid") {
+    is_paid = true;
+  }
+  const videoUrl = await getSignedUrl(
+    s3,
+    new GetObjectCommand({
         Bucket: bucketName,
         Key: video_target.video_id
       })
     )
-    res.render('play', { video_url: videoUrl, video: video_target });
-  // }
+    res.render('play', { video_url: videoUrl, video: video_target, is_paid: is_paid });
 }
 
 exports.video_upload_get = (req, res) => {
@@ -191,8 +175,9 @@ exports.video_upload_post = async (req, res) => {
     createdAt: Date.now()
   });
 
-
-
+  const filter = {username: req.session.username}
+  const update = {walletAddress: req.body.address}
+  await user.findOneAndUpdate(filter, update, { new: true })
 
   await s3.send(video_command);
   await s3.send(image_command);
@@ -203,6 +188,12 @@ exports.video_upload_post = async (req, res) => {
   fs.unlinkSync(`public/temp/${thumbnail_name}-thumbnail-1280x720-0001.png`)
   res.redirect("/home")
 };
+
+exports.payment_post = async(req,res) => {
+   
+}
+
+
 
 exports.profile_get = async (req,res) => {
   const username = req.params.username;

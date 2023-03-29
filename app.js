@@ -10,11 +10,12 @@ const mongodbsession = require('connect-mongodb-session')(session);
 const userController = require("./controllers/userController");
 const videoController = require("./controllers/videoController");
 const liveStreamController = require('./controllers/liveStreamController');
+const paymentController = require('./controllers/paymentController');
 
 //middleware
 const uploadMiddleware = require("./middleware/multer");
 const isAuth = require("./middleware/isAuth");
-const cardMiddleware = require("./middleware/card_info")
+const metamaskMiddleware = require("./middleware/metamask")
 
 //mongodb connection
 const connectDB = require("./config/db");
@@ -60,7 +61,7 @@ app.post("/logout", userController.logout_post);
 
 //upload videos to s3
 app.get("/upload",isAuth,videoController.video_upload_get);
-app.post("/upload",isAuth,uploadMiddleware.single('video'),cardMiddleware,videoController.video_upload_post);
+app.post("/upload",isAuth,uploadMiddleware.single('video'),videoController.video_upload_post);
 
 //get videos from s3
 // app.get("/video_list",isAuth,videoController.videos_get);
@@ -77,6 +78,10 @@ app.get("/home",isAuth,videoController.videos_get);
 
 app.get("/credit",isAuth,userController.card_info_get);
 app.post("/credit",isAuth,userController.card_info_post);
+
+app.get("/payment",isAuth,paymentController.payment_get);
+app.post("/payment",isAuth,paymentController.payment_post);
+
 
 // app.get('/test',isAuth,liveStreamController.allStreams_get);
 app.listen(port, () => console.log(`Listening on port ${port}..`));
