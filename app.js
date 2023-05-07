@@ -101,6 +101,8 @@ app.get("/following",isAuth,videoController.following_get);
 // app.get('/test',isAuth,liveStreamController.allStreams_get);
 
 app.get("/admin/adminpanel",isAdmin,isAuth,adminController.adminpanel_get);
+app.get("/admin/manageaccounts",isAdmin,isAuth,adminController.manageaccounts_get);
+app.post("/account/delete/:user_id",isAdmin,isAuth,adminController.deleteprofile_post);
 
 app.listen(port, () => console.log(`Listening on port ${port}..`));
 

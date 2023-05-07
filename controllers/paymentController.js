@@ -18,10 +18,10 @@ exports.payment_post = async (req, res) => {
     const buyerAddress = req.body.address;
     const privateKey = req.body.privateKey;
     const video_id = req.params.video_id;
-if (!web3.utils.isAddress(buyerAddress) || privateKey.length !== 64) {
-      req.session.error = "Invalid wallet credentials";
-      res.redirect(`/play/${video_id}`)
-    }
+    if (!web3.utils.isAddress(buyerAddress) || privateKey.length !== 64) {
+          req.session.error = "Invalid wallet credentials";
+          res.redirect(`/play/${video_id}`)
+        }
     const target_video = await video.findOne({ video_id: video_id });
     const account = web3.eth.accounts.privateKeyToAccount("0x" + privateKey);
     web3.eth.accounts.wallet.add(account);
@@ -33,8 +33,7 @@ if (!web3.utils.isAddress(buyerAddress) || privateKey.length !== 64) {
     });
     const gasPrice = await web3.eth.getGasPrice();
     const buyerBalance = await web3.eth.getBalance(buyerAddress);
-    console.log(`gas price is ${gasPrice}`)
-    console.log(`buyer's balance is ${buyerBalance}`)
+
     const data = contractMethod.encodeABI();
 
     const tx = {
@@ -47,41 +46,31 @@ if (!web3.utils.isAddress(buyerAddress) || privateKey.length !== 64) {
     };
     const totalPrice = gasPrice + tx.value;
 
-    
-
     if(totalPrice < buyerBalance){
       req.session.error = `Insufficient funds`
       res.redirect(`/play/${video_id}`)
     }
 
-    console.log(`transaction to be made: ${tx.value}`)
-    console.log(`transaction to be made: ${tx.data}`)
-    console.log(`transaction to be made: ${tx.gas}`)
-
-
-    // const signedTx = await web3.eth.accounts.signTransaction(tx, privateKey);
-    // const receipt = await web3.eth.sendSignedTransaction(signedTx.rawTransaction);
+    const signedTx = await web3.eth.accounts.signTransaction(tx, privateKey);
+    const receipt = await web3.eth.sendSignedTransaction(signedTx.rawTransaction);
     
-    // if (receipt.status) {
-    //   const videoToken = target_video.video_token;
-    //   const username = req.session.username;
+    if (receipt.status) {
+      const videoToken = target_video.video_token;
+      const username = req.session.username;
 
-    //   await user.findOneAndUpdate(
-    //     { username },
-    //     { $addToSet: { video_tokens: videoToken } },
-    //     { new: true }
-    //   );
+      await user.findOneAndUpdate(
+        { username },
+        { $addToSet: { video_tokens: videoToken } },
+        { new: true }
+      );
       
-    // } else {
-    //   req.session.error = "Transaction failed.";
-    // }
+    } else {
+      req.session.error = "Transaction failed.";
+    }
     res.redirect(`/play/${video_id}`);
   } catch (error) {
-    const video_id = req.params.video_id;
     req.session.error = error.message;
-    res.redirect(`/play/${video_id}`);
   }
-
 };
 
 exports.livestream_payment_post = async(req,res) => {
