@@ -13,6 +13,21 @@ const streamSchema = new Schema({
   },
   streamUrl: {
     type: String
+  },
+  stream_title: {
+    type: String
+  },
+  stream_status: {
+    type: String,
+    enum: ['paid','free'],
+    require: true
+  }, 
+  stream_price: {
+    type: Number, 
+    default: 0 
+  },
+  check_stream: {
+    type: Boolean,
   }
 });
 

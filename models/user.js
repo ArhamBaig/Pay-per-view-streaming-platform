@@ -33,7 +33,19 @@ const userSchema = new Schema({
   },
   video_tokens: [{
     type: String
-  }]
+  }],
+  following: [{
+    type: String
+  }],
+  followers: [{
+    type: String
+  }],
+  profilepic_url: {
+    type: String
+  },
+  createdAt: {
+    type: Date
+  }
 });
 
 

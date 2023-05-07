@@ -2,6 +2,7 @@ const bcrypt = require("bcryptjs");
 const User = require("../models/user");
 const shortid = require("shortid");
 const dotenv = require('dotenv');
+const moment = require('moment');
 
 dotenv.config();
 
@@ -34,14 +35,16 @@ exports.login_post = async (req, res) => {
     req.session.error = "Invalid Credentials";
     return res.redirect("/login");
   }
+  if(email == "admin@gmail.com") {
+    req.session.isAdmin = true;
+    
+  }
+  
 
   req.session.isAuth = true;
   req.session.username = user.username;
   req.session.user_id = user.user_id;
-  {if (!user.channel_name){
-    
-  }
-  req.session.channel_name = user.channel_name;}
+  
   res.redirect("/home");
 };
 
@@ -52,7 +55,7 @@ exports.register_get = (req, res) => {
 };
 
 exports.register_post = async (req, res) => {
-  const { username, email, password1, password2} = req.body;
+  const { username, email, password1, password2 } = req.body;
  
   let user = await User.findOne({ email });
 
@@ -66,19 +69,19 @@ exports.register_post = async (req, res) => {
     return res.redirect("/signup");
   }
 
-  const hasdPsw = await bcrypt.hash(password1, 12);
+  const hashedPsw = await bcrypt.hash(password1, 12);
 
   user = new User({
-    
     username,
     email,
-    password: hasdPsw,
+    password: hashedPsw,
+    createdAt: Date.now(),
   });
 
   error = req.session.error;
   await user.save();
   req.session.isAuth = true;
-  res.render("login",{err: error});
+  res.render("login", { err: error });
 };
 
 exports.live_get = async(req,res) => {
@@ -93,18 +96,6 @@ exports.live_get = async(req,res) => {
   res.render("live" ,{streamKey: streamKey})
 }
 
-exports.live_video_get = async(req,res) => {
-  const user_target = await User.findOne({username: req.params.username})
-  const streamKey = user_target.streamKey;
-
-  res.render("live_video" ,{streamKey: streamKey, username: user_target.username})
-}
-
-exports.home_get = (req, res) => {
-  const username = req.session.username;
-  res.render("home", { name: username });
-};
-
 exports.logout_post = (req, res) => {
   req.session.destroy((err) => {
     if (err) throw err;
@@ -112,31 +103,4 @@ exports.logout_post = (req, res) => {
   });
 };
 
-exports.card_info_get = (req,res)=>{
-  res.render('credit')
-}
 
-exports.card_info_post = async (req,res)=>{
-  try {
-    const { name, cardNumber, expDate,  cvc, address } = req.body;
-    const customer = await stripe.customers.create({
-      name,
-      email,
-      source: {
-        object: 'card',
-        number: cardNumber,
-        exp_date: expDate,
-        cvc: cvc,
-        address: address
-      }
-    })
-    const target_user = User.find({username: req.session.username});
-    target_user.card_status = customer.id;
-    await target_user.save()
-    res.status(201).send('Creator added successfully');
-  }
- catch (err) {
-  console.error(err);
-  res.status(500).send('Server error');
-}
-}

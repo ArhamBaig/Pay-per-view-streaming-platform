@@ -11,11 +11,15 @@ const userController = require("./controllers/userController");
 const videoController = require("./controllers/videoController");
 const liveStreamController = require('./controllers/liveStreamController');
 const paymentController = require('./controllers/paymentController');
+const searchController = require('./controllers/searchController');
+const adminController = require('./controllers/adminController');
 
 //middleware
 const uploadMiddleware = require("./middleware/multer");
 const isAuth = require("./middleware/isAuth");
-const metamaskMiddleware = require("./middleware/metamask")
+const metamaskMiddleware = require("./middleware/metamask");
+const multerPfpMiddleware = require("./middleware/multer_pfp");
+const isAdmin =  require("./middleware/isAdmin");
 
 //mongodb connection
 const connectDB = require("./config/db");
@@ -57,7 +61,7 @@ app.post("/login", userController.login_post);
 // Signup Page
 app.get("/signup", userController.register_get);
 app.post("/signup", userController.register_post);
-app.post("/logout", userController.logout_post);
+app.post("/logout",isAuth, userController.logout_post);
 
 //upload videos to s3
 app.get("/upload",isAuth,videoController.video_upload_get);
@@ -70,20 +74,34 @@ app.get("/play/:video_id",isAuth,videoController.video_play_get);
 //live stream through OBS
 app.get("/live",isAuth,liveStreamController.live_get);
 app.get("/liveStream/:username",isAuth,liveStreamController.liveStream_get);
+app.get("/livedetails",isAuth,liveStreamController.live_details_get);
+app.post("/livedetails",isAuth,liveStreamController.live_details_post);
 
 //user profile
 app.get("/profile/:username",videoController.profile_get);
+app.post("/profile/:video_id",isAuth,videoController.delete_video);
+app.post("/follow/:username",isAuth,videoController.follow_post);
+app.post("/unfollow/:username",isAuth,videoController.unfollow_post);
+
+//home
 app.get("/home",isAuth,videoController.videos_get);
+app.get("/search",isAuth,searchController.search_get);
+app.get("/searchjson",isAuth,searchController.searchjson_get);
+
+// app.get("/payment",isAuth,paymentController.payment_get);
+app.post("/payment/:video_id",isAuth,paymentController.payment_post);
+app.post("/streamPayment/:streamKey",isAuth,paymentController.livestream_payment_post);
+app.post("/uploadprofilepic",multerPfpMiddleware.single("profile_pic"),isAuth,videoController.upload_profilepic_post);
 
 
-app.get("/credit",isAuth,userController.card_info_get);
-app.post("/credit",isAuth,userController.card_info_post);
-
-app.get("/payment",isAuth,paymentController.payment_get);
-app.post("/payment",isAuth,paymentController.payment_post);
-
-
+app.get("/freevideos",isAuth,videoController.freevideo_get);
+app.get("/exclusive",isAuth,videoController.exclusivevideo_get);
+app.get("/ownedvideos",isAuth,videoController.ownedvideo_get);
+app.get("/following",isAuth,videoController.following_get);
 // app.get('/test',isAuth,liveStreamController.allStreams_get);
+
+app.get("/admin/adminpanel",isAdmin,isAuth,adminController.adminpanel_get);
+
 app.listen(port, () => console.log(`Listening on port ${port}..`));
 
 module.exports = app;

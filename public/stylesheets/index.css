@@ -1,27 +1,144 @@
-a {
-    text-decoration: none; 
-    color: black;
-  }
-a:hover {
-    color: #FFB800;
-  }
-a.nav-link:hover{
-    color: #FFB800;
-}
-a.nav-link{
-    color: white
-}
+
 *{
     font-family: 'Poppins', sans-serif;
 }
 
 body{
-    background-color: #393939;
+    background-color: #000000;
+    color: white;
+    
+}
+.video a{
+  text-decoration: none;
+}
+
+.followers a{
+    text-decoration: none;
     color: white
-    ;
 }
 
-.btn{
-    background-color: #FFB800;
+.btn-primary{
+    color:white;
+    border-color: #772CE8;
+    background: #772CE8;
 }
 
+.payment{
+    background-color: #1c1c1c;
+    position: absolute; 
+    width: 20rem;
+    height: 10rem;  
+    z-index: 1; 
+    display: flex; 
+    justify-content: center; 
+    align-items: center;
+    border-radius: 10px;
+}
+
+.payment-btn{
+    z-index: 2; 
+    
+}
+
+.btn-primary:hover{
+    background: #5b0bd4;
+    }
+#search-btn{
+    color:white;
+    border-color: #5b0bd4;
+}
+#search-btn:hover{
+    background: #5b0bd4;
+}
+
+.form-control:focus {
+    border-color: #772CE8;
+    box-shadow: 0 0 0 0.15rem  #4e09b5;
+}
+#side_nav{
+    background: rgb(28, 28, 28);
+    min-width: 220px;
+    max-width: 220px;
+    transition: all 0.4s;
+    
+}
+
+
+.sidebar li.active{
+    background: white;
+    border-radius: 8px;
+    
+}
+.sidebar a:hover{
+    background: #444444 ;
+    border-radius: 8px;
+    transition: all 0.4s;
+}
+
+.sidebar li.active a:hover{
+    background: white ;
+}
+
+.sidebar li.active a, .sidebar li.active a:hover {
+    color: #772CE8 ;
+}
+
+.sidebar li a{
+    color: white
+}
+
+.content{
+    min-height: 100vh;
+    width: 100%;
+}
+
+.logo a:hover{
+    background: none;
+}
+
+
+.chart-card {
+    /* set the desired width */
+    width: auto;
+    height: 25rem; /* set the desired height */
+  }
+
+.ui-menu {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    display: none;
+    position: absolute;
+    z-index: 9999;
+    background-color: #1f1f1f;
+    max-height: 200px;
+    overflow-y: auto;
+    border-radius: 6px;
+    color: white;
+  
+  }
+  
+  .ui-menu :hover {
+    text-decoration: none;
+    background-color: #6f42c1;
+    outline: none;
+  }
+
+  .btn-check:focus + .btn, 
+  .btn-check:checked + .btn {
+    color: #fff;
+    background-color: #6f42c1;
+    border: none
+  }
+
+@media(max-width: 767px){
+    #side_nav{
+        margin-left: -250px;
+        position: fixed;
+        min-height: 100vh;
+        z-index: 1;
+    }
+    #side_nav.active{
+        margin-left: 0;
+    }
+}
