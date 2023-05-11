@@ -43,6 +43,9 @@ const userSchema = new Schema({
   profilepic_url: {
     type: String
   },
+  profilepic_exist:{
+    type: Boolean
+  },
   createdAt: {
     type: Date
   }

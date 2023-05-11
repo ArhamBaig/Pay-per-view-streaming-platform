@@ -2,7 +2,8 @@
 <html lang="en">
 
 <head>
-  <title>Title</title>
+  <link rel="icon" type="image/x-icon" href="/public/images/logo.png">
+  <title>Livemg</title>
   <!-- Required meta tags -->
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
@@ -19,59 +20,73 @@
 </head>
 
 <body>
-    <div class="main-container d-flex">
-      <div class="sidebar" id="side_nav">
-        <div class="header-box px-3 pt-3 pb-4 d-flex justify-content-between">
-          <h1 class="fs-4 fw-bold"><span class="bg-white text-dark rounded shadow px-2 me-2" >LM</span><span style="color: #9a56ff;">LIVE</span>MG</h1>
-          <button class="btn d-md-none d-block close-btn px-2 py-0"><i class="fa-solid fa-bars"></i></button>
-        </div>
-        <ul class="list-unstyled px-2">
-          <li><a href="/home" class="text-decoration-none px-3 py-2 d-block"><i class="fa-solid fa-house" style="color: #9a56ff;"></i> Home</a></li>
-          <li><a href="/following" class="text-decoration-none px-3 py-2 d-block"><i class="fa-solid fa-heart" style="color: #9a56ff;"></i> Following</a></li>
-          <li><a href="/freevideos" class="text-decoration-none px-3 py-2 d-block"><i class="fa-solid fa-gift" style="color: #9a56ff;"></i> Free Videos</a></li>
-          <li><a href="/exclusive" class="text-decoration-none px-3 py-2 d-block"><i class="fa-solid fa-sack-dollar" style="color: #9a56ff;"></i> Exclusive Videos</a></li>
-          <li><a href="/ownedvideos" class="text-decoration-none px-3 py-2 d-block"><i class="fa-solid fa-handshake" style="color: #9a56ff;"></i> Owned Videos</a></li>
-        </ul>
+  <div class="main-container d-flex">
+    <div class="sidebar" id="side_nav">
+      <div class="header-box px-3 pt-3 pb-4 d-flex justify-content-between">
+        <h1 class="fs-4 fw-bold"><span class="bg-white text-dark rounded shadow px-2 me-2">LM</span><span style="color: #9a56ff;">LIVE</span>MG</h1>
+        <button class="btn d-md-none d-block close-btn px-2 py-0"><i class="fa-solid fa-bars"></i></button>
       </div>
-      <div class="content">
-        <nav class="navbar navbar-expand-lg bg-dark">
-          <div class="container-fluid">
-            <div class="d-flex justify-content-between">
-              <button class="btn px-1 py-0 open-btn text-white d-md-none"><i class="fa-solid fa-bars-staggered"></i></button>
-            </div>
-            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
-              <span class="navbar-toggler-icon"></span>
-            </button>
-  
-            <div class="collapse navbar-collapse " id="navbarSupportedContent">
-  
-              <form class="d-flex mx-auto" role="search" action="/search" method="GET" onsubmit="search(event)">
-                <input class="form-control me-2" type="search" placeholder="Search" aria-label="Search" id="search-input" name="query">
-                <button class="btn btn-outline-success" id="search-btn" type="submit">Search</button>
-              </form>
-              <ul class="navbar-nav mb-2 mb-lg-0 justify-content-end">
-                <li class="nav-item ">
-                  <a class="nav-link text-white d-flex mx-2" aria-current="page" href="/livedetails">
-                    <i class="fa-solid fa-camera fa-xl my-auto mx-1" style="color:#9a56ff"></i>
-                    <h4 class="fw-bold my-auto">
-                      <span style="color:#9a56ff"> GO</span>LIVE
-                    </h4>
-                  </a>
-                </li>
-                <li class="nav-item mx-1">
-                  <a class="nav-link text-white" aria-current="page" href="/upload"><i class="fa-solid fa-cloud-arrow-up fa-xl my-auto"></i></a>
-                </li>
-                <li class="nav-item dropdown">
-                  <a class="nav-link dropdown-toggle text-white my-auto" href="#" id="navbarDropdownMenuLink" role="button" data-bs-toggle="dropdown" aria-expanded="false">
-                    <i class="fa-solid fa-user fa-xl"></i>
-                  </a>
-                  <ul class="dropdown-menu dropdown-menu-end dropdown-menu-dark" aria-labelledby="navbarDropdownMenuLink">
-                    <li><a class="dropdown-item" href="/profile/<%= username %>">Show Profile</a></li>
-                    <li><a class="dropdown-item" href="#" data-bs-toggle="modal" data-bs-target="#logoutModal">Logout</a></li>
-                  </ul>
-                </li>
-                <!-- Logout Modal -->
-                <form action="/logout" method="POST" id="logout-form">
+      <ul class="list-unstyled px-2">
+        <li><a href="/home" class="text-decoration-none px-3 py-2 d-block"><i class="fa-solid fa-house" style="color: #9a56ff;"></i> Home</a></li>
+        <li><a href="/following" class="text-decoration-none px-3 py-2 d-block"><i class="fa-solid fa-heart" style="color: #9a56ff;"></i> Following</a></li>
+        <li><a href="/freevideos" class="text-decoration-none px-3 py-2 d-block"><i class="fa-solid fa-gift" style="color: #9a56ff;"></i> Free Videos</a></li>
+        <li><a href="/exclusive" class="text-decoration-none px-3 py-2 d-block"><i class="fa-solid fa-sack-dollar" style="color: #9a56ff;"></i> Exclusive Videos</a></li>
+        <li><a href="/ownedvideos" class="text-decoration-none px-3 py-2 d-block"><i class="fa-solid fa-handshake" style="color: #9a56ff;"></i> Owned Videos</a></li>
+      </ul>
+    </div>
+    <div class="content">
+      <nav class="navbar navbar-expand-lg bg-dark">
+        <div class="container-fluid">
+          <div class="d-flex justify-content-between">
+            <button class="btn px-1 py-0 open-btn text-white d-md-none"><i class="fa-solid fa-bars-staggered"></i></button>
+          </div>
+          <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+            <span class="navbar-toggler-icon"></span>
+          </button>
+
+          <div class="collapse navbar-collapse " id="navbarSupportedContent">
+
+            <form class="d-flex mx-auto" role="search" action="/search" method="GET" onsubmit="search(event)">
+              <input class="form-control me-2" type="search" placeholder="Search" aria-label="Search" id="search-input" name="query">
+              <button class="btn btn-outline-success" id="search-btn" type="submit">Search</button>
+            </form>
+            <ul class="navbar-nav mb-2 mb-lg-0 justify-content-end">
+              <li class="nav-item ">
+                <a class="nav-link text-white d-flex mx-2" aria-current="page" href="/livedetails">
+                  <i class="fa-solid fa-camera fa-xl my-auto mx-1" style="color:#9a56ff"></i>
+                  <h4 class="fw-bold my-auto">
+                    <span style="color:#9a56ff"> GO</span>LIVE
+                  </h4>
+                </a>
+              </li>
+              <li class="nav-item mx-1">
+                <a class="nav-link text-white" aria-current="page" href="/upload"><i class="fa-solid fa-cloud-arrow-up fa-xl my-auto"></i></a>
+              </li>
+              
+
+              <div class="dropdown bg-dark">
+                <a class="nav-link dropdown-toggle text-white my-auto" href="#" id="navbarDropdownMenuLink" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                  <i class="fa-solid fa-user fa-xl"></i>
+                </a>
+                <ul class="dropdown-menu dropdown-menu-end bg-dark" aria-labelledby="dropdownMenuButton">
+                  <li><h6 class="dropdown-header text-truncate"><%=username%></h6></li>
+                  <li><a class="dropdown-item text-white" href="/profile/<%=username%>">Show Profile</a></li>
+                  <li>
+                    <a class="dropdown-item text-white" href="#">Manage Profile</a>
+                    <ul class="dropdown-menu dropdown-submenu dropdown-submenu-left bg-dark">
+                      <li>
+                        <a class="dropdown-item text-white" data-bs-toggle="modal" data-bs-target="#emailModal">Change Email</a>
+                      </li>
+                      <li>
+                        <a class="dropdown-item text-white" data-bs-toggle="modal" data-bs-target="#passwordModal">Change Password</a>
+                      </li>
+                    </ul>
+                  </li>
+                  <li><a class="dropdown-item text-white logout" data-bs-toggle="modal" data-bs-target="#logoutModal">Logout</a></li>
+                  
+                </ul>
+              </div>
+              <form action="/logout" method="POST" id="logout-form">
                 <div class="modal fade" id="logoutModal" tabindex="-1" aria-labelledby="logoutModalLabel" aria-hidden="true">
                   <div class="modal-dialog">
                     <div class="modal-content">
@@ -90,29 +105,87 @@
                   </div>
                 </div>
               </form>
-              </ul>
-            </div>
-          </div>
-        </nav>
-        <div class="container-fluid">
-          <% if(error) { %>
-            <div class="modal" tabindex="-1" id="error-modal">
-              <div class="modal-dialog">
-                <div class="modal-content">
-                  <div class="modal-header bg-dark">
-                    <h5 class="modal-title">Error</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                  </div>
-                  <div class="modal-body bg-dark">
-                    <p><%=error%></p>
+              <form action="/changeemail/<%=username %>" method="POST" id="email-form">
+                <div class="modal fade" id="emailModal" tabindex="-1" aria-labelledby="emailModalLabel" aria-hidden="true">
+                  <div class="modal-dialog">
+                    <div class="modal-content">
+                      <div class="modal-header bg-dark">
+                        <h5 class="modal-title" id="emailModalLabel">Change Email</h5>
+                        <button type="button" class="btn-close text-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                      </div>
+                      <div class="modal-body bg-dark">
+                        <label for="oldemail" class="form-label mt-2">Email</label>
+                        <input type="email" id="oldemail" name="oldemail" class="form-control" required>
+                        <label for="newemail" class="form-label mt-2">New Email</label>
+                        <input type="email" id="newemail" name="newemail" class="form-control" required>
+                      </div>
+                      <div class="modal-footer bg-dark">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                        <button type="submit" class="btn btn-primary">Save Changes</button>
+                      </div>
+                    </div>
                   </div>
                 </div>
-              </div>
-            </div>
-            <% } %>
+              </form>
+              <form action="/changepassword/<%=username %>" method="POST" id="password-form">
+                <div class="modal fade" id="passwordModal" tabindex="-1" aria-labelledby="passwordModalLabel" aria-hidden="true">
+                  <div class="modal-dialog">
+                    <div class="modal-content">
+                      <div class="modal-header bg-dark">
+                        <h5 class="modal-title" id="passwordModalLabel">Change Password</h5>
+                        <button type="button" class="btn-close text-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                      </div>
+                      <div class="modal-body bg-dark">
+                        <label for="oldpassword" class="form-label mt-2">Password</label>
+                        <input type="password" id="oldpassword" name="oldpassword" class="form-control" required>
+                        <label for="newpassword" class="form-label mt-2">New Password</label>
+                        <input type="password" id="newpassword" name="newpassword" class="form-control" required>
+                        <label for="confirmnewpassword" class="form-label mt-2">Confirm New Password</label>
+                        <input type="password" id="confirmnewpassword" name="confirmnewpassword" class="form-control" required>
+                      </div>
+                      <div class="modal-footer bg-dark">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                        <button type="submit" class="btn btn-primary">Save Changes</button>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </form>
+              
+              <!-- Logout Modal -->
+              <form action="/logout" method="POST" id="logout-form">
+                <div class="modal fade" id="logoutModal" tabindex="-1" aria-labelledby="logoutModalLabel" aria-hidden="true">
+                  <div class="modal-dialog">
+                    <div class="modal-content">
+                      <div class="modal-header bg-dark">
+                        <h5 class="modal-title" id="logoutModalLabel">Logout Confirmation</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                      </div>
+                      <div class="modal-body bg-dark">
+                        Are you sure you want to logout?
+                      </div>
+                      <div class="modal-footer bg-dark">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                        <button type="submit" class="btn btn-danger">Logout</button>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </form>
+            </ul>
+          </div>
+        </div>
+      </nav>
+        <div class="container-fluid">
+    
           <div class="row mt-3  mx-auto">
             <div class="col-lg-8 ms-4">
               <div class="row">
+                <% if(error) { %>
+                  <div class="alert alert-danger" role="alert">
+                    <%= error %>
+                  </div>
+                  <% } %>
                 <div class="d-flex video-container justify-content-center" id="background-div">
                   <% if (is_paid && !videoOwned) { %>
                     <div class="payment mt-5 m-5">
@@ -152,10 +225,10 @@
                 </div>
               </div>
               <div class="row">
-                <h3 class="text-white mt-3"><%= video.video_title%></h3>
-                <h5 class="text-white"><%= video.video_description %></h5>    
+                <h3 class="text-white mt-3 text-truncate"><%= video.video_title%></h3>
+                <h5 class="text-white text-truncate"><%= video.video_description %></h5>    
               <div class="d-flex">
-                <% if (target_user.profilepic_url) { %>
+                <% if (profilePicExist) { %>
                 <img src=<%= target_user.profilepic_url %> alt="pfp" class="rounded-circle me-2" style="width: 4rem">
                 <% } else { %>
                 <img src="../public/images/default-pp.png" alt="pfp" class="rounded-circle me-2" style="width: 4rem">

@@ -37,10 +37,11 @@ exports.login_post = async (req, res) => {
   }
   if(email == "admin@gmail.com") {
     req.session.isAdmin = true;
-    
+    req.session.isAuth = true;
+    return res.redirect("/admin/adminpanel");
   }
   
-
+  req.session.isAdmin = false;
   req.session.isAuth = true;
   req.session.username = user.username;
   req.session.user_id = user.user_id;
@@ -86,7 +87,7 @@ exports.register_post = async (req, res) => {
 
 exports.live_get = async(req,res) => {
   const user_target = await User.findOne({username: req.session.username})
-  console.log(user_target)  
+ 
   if (!user_target.streamKey){
     user_target.streamKey = shortid.generate();
     user_target.save();

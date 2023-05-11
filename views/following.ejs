@@ -2,11 +2,11 @@
 <html lang="en">
 
 <head>
-  <title>Title</title>
+  <link rel="icon" type="image/x-icon" href="/public/images/logo.png">
+  <title>Livemg</title>
   <!-- Required meta tags -->
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-
 
   <script src="https://kit.fontawesome.com/131a015fe2.js" crossorigin="anonymous"></script>
   <script src="https://code.jquery.com/jquery-3.6.4.min.js" integrity="sha256-oP6HI9z1XaZNBrJURtCoUT5SUnxFr8s3BzRl+cbzUq8=" crossorigin="anonymous"></script>
@@ -62,15 +62,96 @@
               <li class="nav-item mx-1">
                 <a class="nav-link text-white" aria-current="page" href="/upload"><i class="fa-solid fa-cloud-arrow-up fa-xl my-auto"></i></a>
               </li>
-              <li class="nav-item dropdown">
+              
+
+              <div class="dropdown bg-dark">
                 <a class="nav-link dropdown-toggle text-white my-auto" href="#" id="navbarDropdownMenuLink" role="button" data-bs-toggle="dropdown" aria-expanded="false">
                   <i class="fa-solid fa-user fa-xl"></i>
                 </a>
-                <ul class="dropdown-menu dropdown-menu-end dropdown-menu-dark" aria-labelledby="navbarDropdownMenuLink">
-                  <li><a class="dropdown-item" href="/profile/<%=username%>">Show Profile</a></li>
-                  <li><a class="dropdown-item" href="#" data-bs-toggle="modal" data-bs-target="#logoutModal">Logout</a></li>
+                <ul class="dropdown-menu dropdown-menu-end bg-dark" aria-labelledby="dropdownMenuButton">
+                  <li><h6 class="dropdown-header text-truncate"><%=username%></h6></li>
+                  <li><a class="dropdown-item text-white" href="/profile/<%=username%>">Show Profile</a></li>
+                  <li>
+                    <a class="dropdown-item text-white" href="#">Manage Profile</a>
+                    <ul class="dropdown-menu dropdown-submenu dropdown-submenu-left bg-dark">
+                      <li>
+                        <a class="dropdown-item text-white" data-bs-toggle="modal" data-bs-target="#emailModal">Change Email</a>
+                      </li>
+                      <li>
+                        <a class="dropdown-item text-white" data-bs-toggle="modal" data-bs-target="#passwordModal">Change Password</a>
+                      </li>
+                    </ul>
+                  </li>
+                  <li><a class="dropdown-item text-white logout" data-bs-toggle="modal" data-bs-target="#logoutModal">Logout</a></li>
+                  
                 </ul>
-              </li>
+              </div>
+              <form action="/logout" method="POST" id="logout-form">
+                <div class="modal fade" id="logoutModal" tabindex="-1" aria-labelledby="logoutModalLabel" aria-hidden="true">
+                  <div class="modal-dialog">
+                    <div class="modal-content">
+                      <div class="modal-header bg-dark">
+                        <h5 class="modal-title" id="logoutModalLabel">Logout Confirmation</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                      </div>
+                      <div class="modal-body bg-dark">
+                        Are you sure you want to logout?
+                      </div>
+                      <div class="modal-footer bg-dark">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                        <button type="submit" class="btn btn-danger">Logout</button>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </form>
+              <form action="/changeemail/<%=username %>" method="POST" id="email-form">
+                <div class="modal fade" id="emailModal" tabindex="-1" aria-labelledby="emailModalLabel" aria-hidden="true">
+                  <div class="modal-dialog">
+                    <div class="modal-content">
+                      <div class="modal-header bg-dark">
+                        <h5 class="modal-title" id="emailModalLabel">Change Email</h5>
+                        <button type="button" class="btn-close text-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                      </div>
+                      <div class="modal-body bg-dark">
+                        <label for="oldemail" class="form-label mt-2">Email</label>
+                        <input type="email" id="oldemail" name="oldemail" class="form-control" required>
+                        <label for="newemail" class="form-label mt-2">New Email</label>
+                        <input type="email" id="newemail" name="newemail" class="form-control" required>
+                      </div>
+                      <div class="modal-footer bg-dark">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                        <button type="submit" class="btn btn-primary">Save Changes</button>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </form>
+              <form action="/changepassword/<%=username %>" method="POST" id="password-form">
+                <div class="modal fade" id="passwordModal" tabindex="-1" aria-labelledby="passwordModalLabel" aria-hidden="true">
+                  <div class="modal-dialog">
+                    <div class="modal-content">
+                      <div class="modal-header bg-dark">
+                        <h5 class="modal-title" id="passwordModalLabel">Change Password</h5>
+                        <button type="button" class="btn-close text-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                      </div>
+                      <div class="modal-body bg-dark">
+                        <label for="oldpassword" class="form-label mt-2">Password</label>
+                        <input type="password" id="oldpassword" name="oldpassword" class="form-control" required>
+                        <label for="newpassword" class="form-label mt-2">New Password</label>
+                        <input type="password" id="newpassword" name="newpassword" class="form-control" required>
+                        <label for="confirmnewpassword" class="form-label mt-2">Confirm New Password</label>
+                        <input type="password" id="confirmnewpassword" name="confirmnewpassword" class="form-control" required>
+                      </div>
+                      <div class="modal-footer bg-dark">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                        <button type="submit" class="btn btn-primary">Save Changes</button>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </form>
+              
               <!-- Logout Modal -->
               <form action="/logout" method="POST" id="logout-form">
                 <div class="modal fade" id="logoutModal" tabindex="-1" aria-labelledby="logoutModalLabel" aria-hidden="true">
@@ -95,8 +176,8 @@
           </div>
         </div>
       </nav>
-
       <div class="container-fluid d-flex flex-wrap">
+
         <% following.forEach((user)=>{ 
           
           let video_length = 0
@@ -111,7 +192,8 @@
             if (user == following.username){
             followers_length = following.followers.length;
             pfp_url = following.profilepic_url;
-         
+            pfp_exist = following.profilepic_exist
+    
           }
           })
 
@@ -128,10 +210,10 @@
             <div class="card m-2 bg-dark">
               <div class="user text-center">
                 <div class="profile mt-3">
-                  <%if(pfp_url){ %>
-                  <img src=<%=pfp_url%> class="rounded-circle" width="80" height="75">
+                  <%if(pfp_exist){ %>
+                  <img src=<%=pfp_url%> class="rounded-circle" alt="pfp" width="80" height="75">
                   <% }else{ %>
-                  <img src="../public/images/default-pp.png" class="rounded-circle" width="80" height="80">
+                  <img src="../public/images/default-pp.png" alt="nopfp" class="rounded-circle" width="80" height="80">
                   <% } %>
                 </div>
               </div>

@@ -29,43 +29,72 @@ const s3 = new S3Client({
 
 
 exports.live_details_get = (req,res) =>{
-  res.render("livedetails",{username: req.session.username})
+  const error = req.session.error;
+  delete req.session.error;
+  res.render("livedetails",{error,username: req.session.username})
 }
 
 exports.live_details_post = async(req,res) => {
   const streamTitle = req.body.title;
   const streamStatus = req.body.status;
+  if ( !streamTitle ) {
+    req.session.error = "Please fill in all the required fields.";
+    return res.redirect("/livedetails");
+  }
+
   let priceInWei;
-  
+  let priceInDollars;
+
   if (req.body.price == null) {
     priceInWei = 0;
+    priceInDollars = 0;
   }
   else{
     const priceInEth = req.body.price/req.body.ethereumValue
     priceInWei = Math.ceil(priceInEth * 10 ** 18);
+    priceInDollars = req.body.price;
   }
   const randomVideoName = () => crypto.randomBytes(5).toString("hex").substring(0, 10);
   const streamKey = randomVideoName()
 
   const filter = {username: req.session.username}
-  const update = {$set: {streamKey: streamKey, stream_status: streamStatus, stream_title: streamTitle, stream_price: priceInWei }}
+  const update = {$set: {streamKey: streamKey, stream_status: streamStatus, stream_title: streamTitle, stream_price: priceInWei, priceInDollars:priceInDollars }}
   const options = {upsert: true, new: true };
   await liveStream.findOneAndUpdate(filter, update, options);
   if (req.body.status === "paid") {
-    const account = web3.eth.accounts.privateKeyToAccount("0x" + req.body.privatekey);
+    try{
+    const privateKey = req.body.privatekey;
+    const uploaderAddress = req.body.address;
+
+    if (!web3.utils.isAddress(uploaderAddress)) {
+      req.session.error = "Invalid wallet credentials";
+      return res.redirect(`/livedetails`);
+    }
+
+    if (!/^[0-9a-fA-F]{64}$/.test(privateKey)) {
+      req.session.error = "Invalid private key";
+      return res.redirect(`/livedetails`);
+    }
+
+    const account = web3.eth.accounts.privateKeyToAccount("0x" + privateKey);
     web3.eth.accounts.wallet.add(account);
 
     const streamPrice = priceInWei;
+    if (account.address.toLowerCase() !== uploaderAddress.toLowerCase()) {
+      req.session.error = "Private key does not match the wallet address";
+      return res.redirect(`/livedetails`);
+    }
+
     const contractMethod = contract.methods.addVideoDetail(
       web3.utils.toBN(streamKey),
-      streamPrice
+      web3.utils.toBN(streamPrice)
     );
-    const gas = await contractMethod.estimateGas({ from: req.body.address });
+    const gas = await contractMethod.estimateGas({ from: uploaderAddress });
     const gasPrice = await web3.eth.getGasPrice();
     const data = contractMethod.encodeABI();
 
     const tx = {
-      from: req.body.address,
+      from: uploaderAddress,
       to: contract.options.address,
       gas,
       gasPrice,
@@ -74,32 +103,45 @@ exports.live_details_post = async(req,res) => {
 
     const signedTx = await web3.eth.accounts.signTransaction(
       tx,
-      req.body.privatekey
+      privateKey
     );
     const receipt = await web3.eth.sendSignedTransaction(
       signedTx.rawTransaction
     );
-
-    if (!receipt.status) {
-      res.send(400).send(`live stream failed to upload to smart contract`);
+    }
+    catch(error){
+      req.session.error = error.message
+      res.redirect("/livedetails")
     }
   }
+
+  const username = req.session.username;
+  await user.findOneAndUpdate(
+    { username },
+    { $addToSet: { video_tokens: streamKey } },
+    { new: true }
+  );
+
   res.redirect('/live')
 }
 
 exports.live_get = async(req, res) => {
   const targetUser = await liveStream.findOne({username: req.session.username});
+
+
   res.render("live", { user: targetUser, username: req.session.username});
 }
 
 exports.liveStream_get = async(req,res) => {
-    const target_stream = await liveStream.findOne({username: req.params.username})
+  const error = req.session.error;
+  delete req.session.error;
+  const target_stream = await liveStream.findOne({username: req.params.username})
 
-    const target_user = await user.findOne({username: req.params.username})
-    const streamKey = target_stream.streamKey;
-    const self_user = await user.findOne({ username: req.session.username });
-    const user_video_token = self_user?.video_tokens || [];
-    let is_paid = false;
+  const target_user = await user.findOne({username: req.params.username})
+  const streamKey = target_stream.streamKey;
+  const self_user = await user.findOne({ username: req.session.username });
+  const user_video_token = self_user?.video_tokens || [];
+  let is_paid = false;
     if (target_stream.stream_status === "paid") {
       is_paid = true;
     }
@@ -118,6 +160,16 @@ exports.liveStream_get = async(req,res) => {
     )
     target_user.save()
 
+    let profilePicExist;
+    try {
+      const response = await axios.get(target_user.profilepic_url);
+      if (response.status == 200) {
+        profilePicExist = true;
+      }
+    } catch {
+      profilePicExist = false;
+    }
+
     res.render("liveStream",
     {streamKey: streamKey,
        target_username: target_stream.username,
@@ -125,7 +177,9 @@ exports.liveStream_get = async(req,res) => {
         streamTitle: target_stream.stream_title,
         isPaid: is_paid,
         videoOwned: video_owned,
-        target_user
+        target_user,
+        error: error,
+        profilePicExist,
       }
       )
   }

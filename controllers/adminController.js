@@ -68,12 +68,14 @@ exports.adminpanel_get = async (req, res) => {
   const fiveDaysAgo = new Date();
   fiveDaysAgo.setDate(fiveDaysAgo.getDate() - 5);
 
+
   // Group videos by date
   const groupedVideos = {};
+  
   videos.forEach((video) => {
     const createdAt = new Date(video.createdAt).toDateString();
-
-    if (createdAt <= fiveDaysAgo.toDateString()) {
+  
+    if (createdAt >= fiveDaysAgo.toDateString()) {
       if (!groupedVideos[createdAt]) {
         groupedVideos[createdAt] = 1;
       } else {
@@ -85,6 +87,7 @@ exports.adminpanel_get = async (req, res) => {
   // Create the labels (dates) and data (video counts) for the chart
   const labels = [];
   const data = [];
+
 
   for (let i = 4; i >= 0; i--) {
     const date = new Date();
@@ -101,7 +104,7 @@ exports.adminpanel_get = async (req, res) => {
   const groupedUser = {};
   users.forEach((user) => {
     const createdAt = new Date(user.createdAt).toDateString();
-    if (createdAt <= fiveDaysAgo.toDateString()) {
+    if (createdAt >= fiveDaysAgo.toDateString()) {
       if (!groupedUser[createdAt]) {
         groupedUser[createdAt] = 1;
       } else {
@@ -109,13 +112,16 @@ exports.adminpanel_get = async (req, res) => {
       }
     }
   });
-
+  console.log(groupedUser)
   const userData = [];
   for (let i = 4; i >= 0; i--) {
     const date = new Date();
     date.setDate(date.getDate() - i);
+
     const dateString = date.toDateString();
+
     const count = groupedUser[dateString] || 0;
+    console.log(count)
     userData.push({ date: dateString, count });
   }
 
@@ -123,7 +129,7 @@ exports.adminpanel_get = async (req, res) => {
     return accumulator + currentValue.count;
   }, 0);
   const lastFiveUserData = userData.map((item) => item.count);
-
+  console.log(userData)
 
   res.render("adminpanel", {
     paidVideosCount,
@@ -146,6 +152,7 @@ exports.manageaccounts_get = async (req, res) => {
 exports.deleteprofile_post = async (req, res) => {
   const user_id = req.params.user_id;
   const target_user = await user.findOne({ user_id: user_id });
+
   const result = await user.deleteOne({ user_id: user_id });
 
   const target_videos = await video.find({ username: target_user.username });
@@ -160,7 +167,7 @@ exports.deleteprofile_post = async (req, res) => {
 
     const thumbnailParams = {
       Bucket: bucketName,
-      Key: `${video_id}-thumbnail-1280x720-0001.png`,
+      Key: `${video_id}-thumbnail-.png`,
     };
 
     const videoCommand = new DeleteObjectCommand(videoParams);

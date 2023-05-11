@@ -28,6 +28,10 @@ const streamSchema = new Schema({
   },
   check_stream: {
     type: Boolean,
+  },
+  priceInDollars: {
+    type: Number,
+    default: 0
   }
 });
 

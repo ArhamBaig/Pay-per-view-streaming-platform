@@ -2,7 +2,8 @@
 <html lang="en">
 
 <head>
-  <title>Title</title>
+  <link rel="icon" type="image/x-icon" href="/public/images/logo.png">
+  <title>Livemg</title>
   <!-- Required meta tags -->
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
@@ -22,7 +23,7 @@
   <div class="main-container d-flex">
     <div class="sidebar" id="side_nav">
       <div class="header-box px-3 pt-3 pb-4 d-flex justify-content-between">
-        <h1 class="fs-4 fw-bold"><span class="bg-white text-dark rounded shadow px-2 me-2" >LM</span><span style="color: #9a56ff;">LIVE</span>MG</h1>
+        <h1 class="fs-4 fw-bold"><span class="bg-white text-dark rounded shadow px-2 me-2">LM</span><span style="color: #9a56ff;">LIVE</span>MG</h1>
         <button class="btn d-md-none d-block close-btn px-2 py-0"><i class="fa-solid fa-bars"></i></button>
       </div>
       <ul class="list-unstyled px-2">
@@ -61,35 +62,116 @@
               <li class="nav-item mx-1">
                 <a class="nav-link text-white" aria-current="page" href="/upload"><i class="fa-solid fa-cloud-arrow-up fa-xl my-auto"></i></a>
               </li>
-              <li class="nav-item dropdown">
+              
+
+              <div class="dropdown bg-dark">
                 <a class="nav-link dropdown-toggle text-white my-auto" href="#" id="navbarDropdownMenuLink" role="button" data-bs-toggle="dropdown" aria-expanded="false">
                   <i class="fa-solid fa-user fa-xl"></i>
                 </a>
-                <ul class="dropdown-menu dropdown-menu-end dropdown-menu-dark" aria-labelledby="navbarDropdownMenuLink">
-                  <li><a class="dropdown-item" href="/profile/<%= username %>">Show Profile</a></li>
-                  <li><a class="dropdown-item" href="#" data-bs-toggle="modal" data-bs-target="#logoutModal">Logout</a></li>
+                <ul class="dropdown-menu dropdown-menu-end bg-dark" aria-labelledby="dropdownMenuButton">
+                  <li><h6 class="dropdown-header text-truncate"><%=username%></h6></li>
+                  <li><a class="dropdown-item text-white" href="/profile/<%=username%>">Show Profile</a></li>
+                  <li>
+                    <a class="dropdown-item text-white" href="#">Manage Profile</a>
+                    <ul class="dropdown-menu dropdown-submenu dropdown-submenu-left bg-dark">
+                      <li>
+                        <a class="dropdown-item text-white" data-bs-toggle="modal" data-bs-target="#emailModal">Change Email</a>
+                      </li>
+                      <li>
+                        <a class="dropdown-item text-white" data-bs-toggle="modal" data-bs-target="#passwordModal">Change Password</a>
+                      </li>
+                    </ul>
+                  </li>
+                  <li><a class="dropdown-item text-white logout" data-bs-toggle="modal" data-bs-target="#logoutModal">Logout</a></li>
+                  
                 </ul>
-              </li>
-              <!-- Logout Modal -->
+              </div>
               <form action="/logout" method="POST" id="logout-form">
-              <div class="modal fade" id="logoutModal" tabindex="-1" aria-labelledby="logoutModalLabel" aria-hidden="true">
-                <div class="modal-dialog">
-                  <div class="modal-content">
-                    <div class="modal-header bg-dark">
-                      <h5 class="modal-title" id="logoutModalLabel">Logout Confirmation</h5>
-                      <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                    </div>
-                    <div class="modal-body bg-dark">
-                      Are you sure you want to logout?
-                    </div>
-                    <div class="modal-footer bg-dark">
-                      <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-                      <button type="submit" class="btn btn-danger">Logout</button>
+                <div class="modal fade" id="logoutModal" tabindex="-1" aria-labelledby="logoutModalLabel" aria-hidden="true">
+                  <div class="modal-dialog">
+                    <div class="modal-content">
+                      <div class="modal-header bg-dark">
+                        <h5 class="modal-title" id="logoutModalLabel">Logout Confirmation</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                      </div>
+                      <div class="modal-body bg-dark">
+                        Are you sure you want to logout?
+                      </div>
+                      <div class="modal-footer bg-dark">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                        <button type="submit" class="btn btn-danger">Logout</button>
+                      </div>
                     </div>
                   </div>
                 </div>
-              </div>
-            </form>
+              </form>
+              <form action="/changeemail/<%=username %>" method="POST" id="email-form">
+                <div class="modal fade" id="emailModal" tabindex="-1" aria-labelledby="emailModalLabel" aria-hidden="true">
+                  <div class="modal-dialog">
+                    <div class="modal-content">
+                      <div class="modal-header bg-dark">
+                        <h5 class="modal-title" id="emailModalLabel">Change Email</h5>
+                        <button type="button" class="btn-close text-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                      </div>
+                      <div class="modal-body bg-dark">
+                        <label for="oldemail" class="form-label mt-2">Email</label>
+                        <input type="email" id="oldemail" name="oldemail" class="form-control" required>
+                        <label for="newemail" class="form-label mt-2">New Email</label>
+                        <input type="email" id="newemail" name="newemail" class="form-control" required>
+                      </div>
+                      <div class="modal-footer bg-dark">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                        <button type="submit" class="btn btn-primary">Save Changes</button>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </form>
+              <form action="/changepassword/<%=username %>" method="POST" id="password-form">
+                <div class="modal fade" id="passwordModal" tabindex="-1" aria-labelledby="passwordModalLabel" aria-hidden="true">
+                  <div class="modal-dialog">
+                    <div class="modal-content">
+                      <div class="modal-header bg-dark">
+                        <h5 class="modal-title" id="passwordModalLabel">Change Password</h5>
+                        <button type="button" class="btn-close text-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                      </div>
+                      <div class="modal-body bg-dark">
+                        <label for="oldpassword" class="form-label mt-2">Password</label>
+                        <input type="password" id="oldpassword" name="oldpassword" class="form-control" required>
+                        <label for="newpassword" class="form-label mt-2">New Password</label>
+                        <input type="password" id="newpassword" name="newpassword" class="form-control" required>
+                        <label for="confirmnewpassword" class="form-label mt-2">Confirm New Password</label>
+                        <input type="password" id="confirmnewpassword" name="confirmnewpassword" class="form-control" required>
+                      </div>
+                      <div class="modal-footer bg-dark">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                        <button type="submit" class="btn btn-primary">Save Changes</button>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </form>
+              
+              <!-- Logout Modal -->
+              <form action="/logout" method="POST" id="logout-form">
+                <div class="modal fade" id="logoutModal" tabindex="-1" aria-labelledby="logoutModalLabel" aria-hidden="true">
+                  <div class="modal-dialog">
+                    <div class="modal-content">
+                      <div class="modal-header bg-dark">
+                        <h5 class="modal-title" id="logoutModalLabel">Logout Confirmation</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                      </div>
+                      <div class="modal-body bg-dark">
+                        Are you sure you want to logout?
+                      </div>
+                      <div class="modal-footer bg-dark">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                        <button type="submit" class="btn btn-danger">Logout</button>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </form>
             </ul>
           </div>
         </div>
@@ -98,29 +180,37 @@
         <div class="col-12 m-3">
         <h3><span style="color:#9a56ff">Free</span> videos</h3>
         </div>
-          <% videos.forEach(video=> { 
-             if(video.video_status == "free") { %>
-          <div class="video mx-3">
-            <a href="/play/<%= video.video_id %>">
-              <div class="card bg-dark mb-4" style="width: 18rem;">
-                <img class="card-img-top<% if(video.video_status == "paid") { %> blurred<% } %>" src="<%= video.thumbnail_url %>" alt="Thumbnail">
-                <div class="card-body h-100">
-                  <h5 class="card-title fw-bold text-truncate text-white"><%= video.video_title %></h5>
-                  <div class="row">
-                    <div class="col">
-                      <a href="/profile/<%= video.username %>">
-                        <p class="card-text text-muted text-start text-white"><%= video.username %></p>
-                      </a>
-                    </div>
-                    <div class="col">
-                      <p class="card-text text-muted fs-6 text-white">• <%= video.elapsed %></p>
-                    </div>
+        <% videos.forEach(video=> { 
+          if(video.video_status == "free") {%>
+          <div class="mx-3 video">
+          <a href="/play/<%= video.video_id %>">
+            <div class="card bg-dark mb-4" style="width: 18rem;">
+              <img class="card-img-top<% if (video.video_status == 'paid') { %> blurred<% } %>" src="<%= video.thumbnail_url %>" alt="Thumbnail">
+              <% if (video.video_status == 'paid') { %>
+                <span class="badge bg-warning text-dark position-absolute  start-0 ms-1 mt-1">Paid</span>
+                <% } %>
+              <div class="card-body h-100">
+                <div class="d-flex">
+                <h5 class="card-title fw-bold text-truncate text-white" style="text-decoration: none;"><%= video.video_title %></h5>
+                <% if (video.video_status == 'paid') { %>
+                <span class="fw-bold text-white position-absolute end-0 me-1"><span style="color:#9a56ff">$</span><%=video.priceInDollars%></span>
+                <% } %>
+              </div>
+              <div class="row align-items-center">
+                  <div class="col-5">
+                    <a href="/profile/<%= video.username %>">
+                      <p class="card-text text-muted text-start text-white text-truncate mb-0"><%= video.username %></p>
+                    </a>
+                  </div>
+                  <div class="col-7 text-end">
+                    <p class="card-text text-muted fs-6 text-white text-truncate mb-0">• <%= video.elapsed %></p>
                   </div>
                 </div>
               </div>
-            </a>
-          </div>
-          <% }}) %>
+            </div>
+          </a>
+        </div>
+        <% }}) %>
         </div>
       </div>
     </div>

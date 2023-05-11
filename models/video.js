@@ -35,6 +35,10 @@ const videoSchema = new Schema({
   type: Number, 
   default: 0 
   },
+  priceInDollars: {
+  type: Number, 
+  default: 0 
+  },
   video_url: {
     type: String,
     require:true

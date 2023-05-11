@@ -1,11 +1,11 @@
 const dotenv = require("dotenv");
 const crypto = require("crypto");
 const VideoThumbnailGenerator = require("video-thumbnail-generator").default;
-const fs= require("fs");
+const fs = require("fs");
 const video = require("../models/video");
 const stream = require("../models/liveStream");
 const axios = require("axios");
-
+const sharp = require('sharp');
 const {
   S3Client,
   PutObjectCommand,
@@ -57,12 +57,37 @@ const web3 = new Web3(
 const contract = new web3.eth.Contract(contractABI, contractAddress);
 
 exports.videos_get = async (req, res) => {
-  const videos = await video.find({});
+  const latestVideos = await video.find({}).sort({ createdAt: -1 }).limit(8);
+  const allVideos = await video.find({}).sort({ createdAt: -1 });
+  const videos = latestVideos;
+  const remainingVideos = allVideos.slice(8);
   const streams = await stream.find({});
   const error = req.session.error;
   delete req.session.error;
 
   for (let video of videos) {
+    video.video_url = await getSignedUrl(
+      s3,
+      new GetObjectCommand({
+        Bucket: bucketName,
+        Key: video.video_id,
+      })
+    );
+
+    video.thumbnail_url = await getSignedUrl(
+      s3,
+      new GetObjectCommand({
+        Bucket: bucketName,
+        Key: video.thumbnail_name,
+      })
+    );
+
+    const elapsed = moment(video.createdAt).fromNow();
+    video.elapsed = elapsed;
+    video.save();
+  }
+
+  for (let video of remainingVideos) {
     video.video_url = await getSignedUrl(
       s3,
       new GetObjectCommand({
@@ -95,35 +120,41 @@ exports.videos_get = async (req, res) => {
     stream.save();
   }
 
- 
   for (let stream of streams) {
     try {
       const response = await axios.get(stream.streamUrl);
       if (response.status == 200) {
         stream.check_stream = true;
-        await stream.save()
+        await stream.save();
       }
     } catch (error) {
       stream.check_stream = false;
-      await stream.save()
+      await stream.save();
     }
   }
 
   let streamExist;
-  for (let stream of streams){
-    try{
-    const response = await axios.get(stream.streamUrl);
-    if (response.status == 200) {
-      streamExist = true;
-      break;
+  for (let stream of streams) {
+    try {
+      const response = await axios.get(stream.streamUrl);
+      if (response.status == 200) {
+        streamExist = true;
+        break;
+      }
+    } catch (error) {
+      streamExist = false;
     }
-    }catch(error){
-      streamExist = false
-    }
-    } 
+  }
 
+  res.render("home", {
+    videos: videos,
+    err: error,
+    streams: streams,
+    username: req.session.username,
+    streamExist: streamExist,
+    remainingVideos,
 
-  res.render("home", { videos: videos, err: error, streams: streams,username: req.session.username, streamExist: streamExist});
+  });
 };
 
 exports.video_play_get = async (req, res) => {
@@ -132,8 +163,8 @@ exports.video_play_get = async (req, res) => {
   const video_id = req.params.video_id;
   const self_user = await user.findOne({ username: req.session.username });
   const target_video = await video.findOne({ video_id: video_id });
-  const target_user = await user.findOne({username: target_video.username});
-  
+  const target_user = await user.findOne({ username: target_video.username });
+
   const user_video_token = self_user?.video_tokens || [];
 
   let videoOwned = false;
@@ -163,6 +194,16 @@ exports.video_play_get = async (req, res) => {
   )
   target_user.save()
 
+  let profilePicExist;
+  try {
+    const response = await axios.get(target_user.profilepic_url);
+    if (response.status == 200) {
+      profilePicExist = true;
+    }
+  } catch {
+    profilePicExist = false;
+  }
+
   res.render("play", {
     video_url: videoUrl,
     video: target_video,
@@ -170,7 +211,8 @@ exports.video_play_get = async (req, res) => {
     videoOwned: videoOwned,
     error: error,
     username: req.session.username,
-    target_user
+    target_user,
+    profilePicExist
   });
 };
 
@@ -178,22 +220,43 @@ exports.video_upload_get = (req, res) => {
   const error = req.session.error;
   delete req.session.error;
 
-  res.render("upload", { err: error,username: req.session.username });
+  res.render("upload", { error, username: req.session.username });
 };
 
 exports.video_upload_post = async (req, res) => {
   const video_id = randomVideoName();
   const thumbnail_name = `${video_id}`;
-  let priceInWei;
+  const videoFile = req.file;
+  const videoTitle = req.body.title;
+  const videoDescription = req.body.description;
 
+  if (!videoFile || !videoTitle || !videoDescription) {
+    req.session.error = "Please fill in all the required fields.";
+    return res.redirect("/upload");
+  }
+  if (videoFile.mimetype !== "video/mp4") {
+    req.session.error = "Please upload a valid MP4 video file.";
+    return res.redirect("/upload");
+  }
+
+  let priceInWei;
+  let priceInDollars;
   if (req.body.price == null) {
     priceInWei = 0;
+    priceInDollars = 0;
   } else {
     const priceInEth = req.body.price / req.body.ethereumValue;
     priceInWei = Math.ceil(priceInEth * 10 ** 18);
+    priceInDollars = req.body.price;
   }
   const videoPath = `${video_id}.mp4`;
-  fs.writeFileSync(videoPath, req.file.buffer);
+  if (req.file) {
+    fs.writeFileSync(videoPath, req.file.buffer);
+  } else {
+    // Handle the case when no file is selected
+    req.session.error = "No video file selected";
+    return res.redirect("/upload");
+  }
 
   const generator = new VideoThumbnailGenerator({
     sourcePath: videoPath,
@@ -201,16 +264,24 @@ exports.video_upload_post = async (req, res) => {
   });
 
   const thumbnail_gen = await generator.generate({
-    numThumbs: 1,
-    size: `1280x720`,
-    timestamps: ["50%"],
-    outputPrefix: thumbnail_name,
-  });
+  numThumbs: 1,
+  size: `640x360`,
+  timestamps: ["50%"],
+  outputPrefix: thumbnail_name,
+});
 
-  fs.unlinkSync(videoPath);
+const imagePath = `public/temp/${thumbnail_name}-thumbnail-640x360-0001.png`;
 
-  const imagePath = `public/temp/${thumbnail_name}-thumbnail-1280x720-0001.png`;
-  const fileContent = fs.readFileSync(imagePath);
+// Compress the thumbnail using sharp
+const compressedImagePath = `public/temp/${thumbnail_name}-thumbnail.png`;
+await sharp(imagePath)
+  .png({ quality: 20 }) // Adjust the quality as needed (0-100)
+  .toFile(compressedImagePath);
+
+fs.unlinkSync(videoPath);
+fs.unlinkSync(imagePath);
+
+const fileContent = fs.readFileSync(compressedImagePath);
 
   const videoParams = {
     Bucket: bucketName,
@@ -220,7 +291,7 @@ exports.video_upload_post = async (req, res) => {
   };
   const imageParams = {
     Bucket: bucketName,
-    Key: `${thumbnail_name}-thumbnail-1280x720-0001.png`,
+    Key: `${thumbnail_name}-thumbnail.png`,
     Body: fileContent,
     ContentType: "image/png",
   };
@@ -235,83 +306,106 @@ exports.video_upload_post = async (req, res) => {
     video_description: req.body.description,
     video_status: req.body.status,
     price: priceInWei,
-    thumbnail_name: `${thumbnail_name}-thumbnail-1280x720-0001.png`,
+    priceInDollars:priceInDollars,
+    thumbnail_name: `${thumbnail_name}-thumbnail.png`,
     createdAt: Date.now(),
   });
+  
 
   if (req.body.status === "paid") {
-    const account = web3.eth.accounts.privateKeyToAccount(
-      "0x" + req.body.privatekey
-    );
-    web3.eth.accounts.wallet.add(account);
-    const video_price = priceInWei;
+    try{
+      const privateKey = req.body.privatekey;
+      const uploaderAddress = req.body.address;
 
-    const contractMethod = contract.methods.addVideoDetail(
-      web3.utils.toBN(video_id),
-      video_price
-    );
-    const gas = await contractMethod.estimateGas({ from: req.body.address });
-    const gasPrice = await web3.eth.getGasPrice();
-    const data = contractMethod.encodeABI();
+      if (!web3.utils.isAddress(uploaderAddress)) {
+        req.session.error = "Invalid wallet credentials";
+        return res.redirect(`/upload`);
+      }
 
-    const tx = {
-      from: req.body.address,
-      to: contract.options.address,
-      gas,
-      gasPrice,
-      data,
-    };
+      if (!/^[0-9a-fA-F]{64}$/.test(privateKey)) {
+        req.session.error = "Invalid private key";
+        return res.redirect(`/upload`);
+      }
+  
+      const account = web3.eth.accounts.privateKeyToAccount("0x" + privateKey);
+      web3.eth.accounts.wallet.add(account);
+      const video_price = priceInWei;
 
-    const signedTx = await web3.eth.accounts.signTransaction(
-      tx,
-      req.body.privatekey
-    );
-    const receipt = await web3.eth.sendSignedTransaction(
-      signedTx.rawTransaction
-    );
-
-    if (!receipt.status) {
-      res.send(400).send(`video failed to upload to smart contract`);
+      if (account.address.toLowerCase() !== uploaderAddress.toLowerCase()) {
+        req.session.error = "Private key does not match the wallet address";
+        return res.redirect(`/upload`);
+      }
+      const contractMethod = contract.methods.addVideoDetail(
+        web3.utils.toBN(video_id),
+        web3.utils.toBN(video_price)
+      );
+      const gas = await contractMethod.estimateGas({ from: uploaderAddress });
+      const gasPrice = await web3.eth.getGasPrice();
+      const data = contractMethod.encodeABI();
+  
+      const tx = {
+        from: uploaderAddress,
+        to: contract.options.address,
+        gas,
+        gasPrice,
+        data,
+      };
+  
+      const signedTx = await web3.eth.accounts.signTransaction(
+        tx,
+        privateKey
+      );
+      const receipt = await web3.eth.sendSignedTransaction(
+        signedTx.rawTransaction
+      );
+      
+      }
+      catch(error){
+        req.session.error = error.message
+        return res.redirect("/upload")
+      }
     }
-  }
+
+  await newVideo.save();
+  const username = req.session.username;
+  const videoToken = newVideo.video_token;
+
+  await user.findOneAndUpdate(
+    { username },
+    { $addToSet: { video_tokens: videoToken } },
+    { new: true }
+  );
 
   await s3.send(video_command);
   await s3.send(image_command);
   await newVideo.save();
-  
-  if (req.body.status === "paid") {
-    const username = req.session.username;
-    const videoToken = newVideo.video_token;
-    await user.findOneAndUpdate(
-      { username },
-      { $addToSet: { video_tokens: videoToken } },
-      { new: true }
-    );
-    }
+
   req.session.isAuth = true;
   req.session.video_id = newVideo.video_id;
-  fs.unlinkSync(`public/temp/${thumbnail_name}-thumbnail-1280x720-0001.png`);
+  fs.unlinkSync(`public/temp/${thumbnail_name}-thumbnail.png`);
   res.redirect("/home");
 };
 
 exports.profile_get = async (req, res) => {
+  const error = req.session.error;
+  delete req.session.error;
   const username = req.params.username;
-  const current_user = await user.findOne({username: req.session.username});
-  const profile_user = await user.findOne({username: username});
+  const current_user = await user.findOne({ username: req.session.username });
+  const profile_user = await user.findOne({ username: username });
   const current_user_following = current_user.following;
-  
+
   let profileOwner = false;
-  if (req.session.username == req.params.username){
+  if (req.session.username == req.params.username) {
     profileOwner = true;
   }
 
   let isFollowed = false;
-  if (current_user_following.includes(req.params.username)){
+  if (current_user_following.includes(req.params.username)) {
     isFollowed = true;
   }
-  
+
   const videos = await video.find({ username: username });
-  
+
   for (let video of videos) {
     video.thumbnail_url = await getSignedUrl(
       s3,
@@ -327,96 +421,98 @@ exports.profile_get = async (req, res) => {
     s3,
     new GetObjectCommand({
       Bucket: bucketName,
-      Key: `${profile_user.user_id}.png`
+      Key: `${profile_user.user_id}.png`,
     })
-  )
-  profile_user.save()
+  );
+  profile_user.save();
   let profilePicExist;
-  try{
-  const response = await axios.get(profile_user.profilepic_url);
-    if(response.status == 200) {
+  try {
+    const response = await axios.get(profile_user.profilepic_url);
+    if (response.status == 200) {
       profilePicExist = true;
     }
-  }
-  catch {
+  } catch {
     profilePicExist = false;
   }
 
   const target_user = await user.findOne({ username: username });
   const followersCount = target_user.followers.length;
 
-  res.render("profile", 
-  { videos: videos, 
-    target_username: username, 
-    profileOwner: profileOwner, 
-    isFollowed: isFollowed, 
-    followersCount:followersCount,
+  res.render("profile", {
+    videos: videos,
+    target_username: username,
+    profileOwner: profileOwner,
+    isFollowed: isFollowed,
+    followersCount: followersCount,
     profile_pic: profile_user.profilepic_url,
     username: req.session.username,
     target_user: profile_user,
-    profilePicExist
+    profilePicExist,
+    current_user,
+    error: error,
+    isAdmin: req.session.isAdmin
   });
 };
 
-exports.delete_video = async(req,res) =>{
-const username = req.session.username
-const video_id = req.params.video_id
-const result = await video.deleteOne({video_id: video_id });
+exports.delete_video = async (req, res) => {
+  const username = req.session.username;
+  const video_id = req.params.video_id;
+  const result = await video.deleteOne({ video_id: video_id });
 
-const videoParams = {
-  Bucket: bucketName,
-  Key: video_id,
-}
+  const videoParams = {
+    Bucket: bucketName,
+    Key: video_id,
+  };
 
-const thumbnailParams = {
-  Bucket: bucketName,
-  Key: `${video_id}-thumbnail-1280x720-0001.png`
-}
+  const thumbnailParams = {
+    Bucket: bucketName,
+    Key: `${video_id}-thumbnail.png`,
+  };
 
-const videoCommand = new DeleteObjectCommand(videoParams);
-const thumbnailCommand = new DeleteObjectCommand(thumbnailParams);
-s3.send(videoCommand)
-s3.send(thumbnailCommand)
+  const videoCommand = new DeleteObjectCommand(videoParams);
+  const thumbnailCommand = new DeleteObjectCommand(thumbnailParams);
+  s3.send(videoCommand);
+  s3.send(thumbnailCommand);
 
-res.redirect(`/profile/${username}`)
-}
+  res.redirect(`/profile/${username}`);
+};
 
-exports.follow_post = async(req,res) => {
+exports.follow_post = async (req, res) => {
   const follower = req.params.username;
   const username = req.session.username;
-  
-  await user.findOneAndUpdate(
-          { username },
-          { $addToSet: { following: follower } },
-          { new: true }
-        );
 
   await user.findOneAndUpdate(
-          { username: follower },
-          { $addToSet: { followers: username } },
-          { new: true }
-        );
-  res.redirect(`/profile/${follower}`)
-}
+    { username },
+    { $addToSet: { following: follower } },
+    { new: true }
+  );
 
-exports.unfollow_post = async(req,res) => {
+  await user.findOneAndUpdate(
+    { username: follower },
+    { $addToSet: { followers: username } },
+    { new: true }
+  );
+  res.redirect(`/profile/${follower}`);
+};
+
+exports.unfollow_post = async (req, res) => {
   const follower = req.params.username;
   const username = req.session.username;
-  
-  await user.findOneAndUpdate(
-          { username },
-          { $pull: { following: follower } },
-          { new: true }
-        );
-  
-  await user.findOneAndUpdate(
-          { username: follower },
-          { $pull: { followers: username } },
-          { new: true }
-        );
 
-  res.redirect(`/profile/${follower}`)
-}
+  await user.findOneAndUpdate(
+    { username },
+    { $pull: { following: follower } },
+    { new: true }
+  );
+
+  await user.findOneAndUpdate(
+    { username: follower },
+    { $pull: { followers: username } },
+    { new: true }
+  );
+
+  res.redirect(`/profile/${follower}`);
+};
 
 exports.upload_profilepic_post = async (req, res) => {
   const username = req.session.username;
@@ -429,63 +525,152 @@ exports.upload_profilepic_post = async (req, res) => {
 
     await fs.promises.rename(tempFilePath, newFilePath);
 
-      const imageData = fs.readFileSync(newFilePath);
-      console.log(imageData)
-      const profilePicParams = {
-        Bucket: bucketName,
-        Key: newFileName,
-        ContentType: "image/png",
-        Body: imageData,
-      };
+    const imageData = fs.readFileSync(newFilePath);
+    const profilePicParams = {
+      Bucket: bucketName,
+      Key: newFileName,
+      ContentType: "image/png",
+      Body: imageData,
+    };
 
-      const profilePic_command = new PutObjectCommand(profilePicParams);
-      await s3.send(profilePic_command);
-      res.redirect(`profile/${username}`);
-    ;
+    const profilePic_command = new PutObjectCommand(profilePicParams);
+    await s3.send(profilePic_command);
+    res.redirect(`profile/${username}`);
   } catch (error) {
-    console.log(error);
+  
     res.status(500).send("Error uploading profile picture.");
   }
 };
 
-exports.following_get = async(req,res) => {
-  const username = await user.findOne({username: req.session.username});
+exports.following_get = async (req, res) => {
+  const username = await user.findOne({ username: req.session.username });
+
+  if (!username.following) {
+    res.render("following", {
+      username: req.session.username,
+      following: [],
+      followers_videos: [],
+      followers_following: [],
+    });
+    return;
+  }
+
   const followingArray = [];
-  username.following.forEach((follow)=>{
+  username.following.forEach((follow) => {
     followingArray.push(follow);
-  }); 
-  
+  });
 
+  const followers_following = await user.find({
+    username: { $in: followingArray },
+  });
+  const followers_video = await video.find({
+    username: { $in: followingArray },
+  });
 
-  const followers_following = await user.find({ username: { $in: followingArray } });
-  const followers_video = await video.find({username: {$in: followingArray}})
-
-  followers_following.forEach(async(follower)=>{
+  followers_following.forEach(async (follower) => {
     follower.profilepic_url = await getSignedUrl(
       s3,
       new GetObjectCommand({
         Bucket: bucketName,
-        Key: `${follower.user_id}.png`
+        Key: `${follower.user_id}.png`,
       })
-    )
-    follower.save()
-  })
+    );
+    follower.save();
+  });
+  followers_following.forEach(async (follower) => {
+  try {
+    const response = await axios.get(follower.profilepic_url);
+    if (response.status == 200) {
+      follower.profilepic_exist = true;
+      follower.save();
+    }
+  } catch {
+    follower.profilepic_exist = false
+    follower.save();
+  }
+});
+  res.render("following", {
+    username: req.session.username,
+    following: followingArray,
+    followers_videos: followers_video,
+    followers_following: followers_following,
+  });
+};
+
+exports.freevideo_get = async (req, res) => {
+  const videos = await video.find({});
+  for (let video of videos) {
+    const elapsed = moment(video.createdAt).fromNow();
+    video.elapsed = elapsed;
+    video.save();
+  }
+  res.render("freevideos", 
+  { username: req.session.username, 
+    videos: videos 
+  });
+};
+
+exports.exclusivevideo_get = async (req, res) => {
+  const videos = await video.find({});
+  for (let video of videos) {
+    const elapsed = moment(video.createdAt).fromNow();
+    video.elapsed = elapsed;
+    video.save();
+  }
+  res.render("exclusive", { username: req.session.username, videos: videos });
+};
+
+exports.ownedvideo_get = async (req, res) => {
+  const cur_user = await user.findOne({ username: req.session.username });
+  const videos = await video.find({
+    video_token: { $in: cur_user.video_tokens },
+  });
+  for (let video of videos) {
+    const elapsed = moment(video.createdAt).fromNow();
+    video.elapsed = elapsed;
+    video.save();
+  }
+  res.render("ownedvideos", { username: req.session.username, videos: videos });
+};
+
+const bcrypt = require("bcryptjs");
+
+exports.change_email = async(req,res)=> {
+  const username = await user.findOne({username: req.session.username});
+  if (username.email == req.body.oldemail){
+
+    const emailExists = await user.findOne({ email: req.body.newemail });
   
-  res.render("following",{username: req.session.username, following: followingArray, followers_videos: followers_video, followers_following:followers_following});
+    if (emailExists) {
+      req.session.error = "Email already exists. Please choose a different email.";
+      return res.redirect(`/profile/${username.username}`);
+    }
+
+    const newemail = req.body.newemail;
+    username.email = newemail;
+    username.save()
+    res.redirect(`/profile/${username.username}`)  }
+  else {
+    req.session.error = `incorrect email`
+    res.redirect(`/profile/${username.username}`)  }
 }
 
-exports.freevideo_get = async(req,res)=> {
-  const videos = await video.find({})
-  res.render("freevideos",{username : req.session.username , videos: videos})
+exports.change_password = async(req,res)=> {
+  const username = await user.findOne({username: req.session.username});
+  if (await bcrypt.compare(req.body.oldpassword,username.password)){
+    const newpassword = req.body.newpassword;
+    if (newpassword == req.body.confirmnewpassword){
+     username.password = await bcrypt.hash(newpassword, 12);
+     username.save()
+     res.redirect(`/profile/${username.username}`)
+    }
+    else{
+      req.session.error = `passwords do not match`
+      res.redirect(`/profile/${username.username}`)
+    }
+  }
+  else{
+    req.session.error = `incorrect password`
+    res.redirect(`/profile/${username.username}`)  }
 }
 
-exports.exclusivevideo_get = async(req,res)=> {
-  const videos = await video.find({})
-  res.render("exclusive",{username : req.session.username , videos: videos})
-}
-
-exports.ownedvideo_get = async(req,res)=> {
-  const cur_user = await user.findOne({username: req.session.username});
-  const videos = await video.find({video_token: {$in: cur_user.video_tokens}})
-  res.render("ownedvideos",{username : req.session.username , videos: videos})
-}

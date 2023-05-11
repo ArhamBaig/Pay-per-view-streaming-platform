@@ -82,6 +82,8 @@ app.get("/profile/:username",videoController.profile_get);
 app.post("/profile/:video_id",isAuth,videoController.delete_video);
 app.post("/follow/:username",isAuth,videoController.follow_post);
 app.post("/unfollow/:username",isAuth,videoController.unfollow_post);
+app.post("/changeemail/:username",isAuth,videoController.change_email);
+app.post("/changepassword/:username",isAuth,videoController.change_password);
 
 //home
 app.get("/home",isAuth,videoController.videos_get);
@@ -103,6 +105,7 @@ app.get("/following",isAuth,videoController.following_get);
 app.get("/admin/adminpanel",isAdmin,isAuth,adminController.adminpanel_get);
 app.get("/admin/manageaccounts",isAdmin,isAuth,adminController.manageaccounts_get);
 app.post("/account/delete/:user_id",isAdmin,isAuth,adminController.deleteprofile_post);
+
 
 app.listen(port, () => console.log(`Listening on port ${port}..`));
 

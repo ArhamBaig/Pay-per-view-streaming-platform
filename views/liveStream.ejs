@@ -2,14 +2,16 @@
 <html lang="en">
 
 <head>
-  <title>Title</title>
+  <link rel="icon" type="image/x-icon" href="/public/images/logo.png">
+  <title>Livemg</title>
   <!-- Required meta tags -->
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+  <link href="https://unpkg.com/video.js@7.5.4/dist/video-js.css" rel="stylesheet">
+  <script src="https://unpkg.com/video.js@7.5.4/dist/video.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/silvermine-videojs-quality-selector@1.1.2/dist/js/silvermine-videojs-quality-selector.min.js" integrity="sha256-KxfwLbY1KbK6b+Z8Mgtp/4A7d1t71scM5ICcXGYKsws=" crossorigin="anonymous"></script>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/silvermine-videojs-quality-selector@1.1.2/dist/css/quality-selector.min.css">
 
-  <link href="https://unpkg.com/@silvermine/videojs-quality-selector/dist/css/quality-selector.css" rel="stylesheet">
-    <link href="https://vjs.zencdn.net/8.3.0/video-js.css" rel="stylesheet" />
-  
   <script src="https://kit.fontawesome.com/131a015fe2.js" crossorigin="anonymous"></script>
   <script src="https://code.jquery.com/jquery-3.6.4.min.js" integrity="sha256-oP6HI9z1XaZNBrJURtCoUT5SUnxFr8s3BzRl+cbzUq8=" crossorigin="anonymous"></script>
   <link rel="stylesheet" href="https://code.jquery.com/ui/1.13.0/themes/base/jquery-ui.css">
@@ -45,7 +47,9 @@
           <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
             <span class="navbar-toggler-icon"></span>
           </button>
+
           <div class="collapse navbar-collapse " id="navbarSupportedContent">
+
             <form class="d-flex mx-auto" role="search" action="/search" method="GET" onsubmit="search(event)">
               <input class="form-control me-2" type="search" placeholder="Search" aria-label="Search" id="search-input" name="query">
               <button class="btn btn-outline-success" id="search-btn" type="submit">Search</button>
@@ -62,15 +66,96 @@
               <li class="nav-item mx-1">
                 <a class="nav-link text-white" aria-current="page" href="/upload"><i class="fa-solid fa-cloud-arrow-up fa-xl my-auto"></i></a>
               </li>
-              <li class="nav-item dropdown">
+              
+
+              <div class="dropdown bg-dark">
                 <a class="nav-link dropdown-toggle text-white my-auto" href="#" id="navbarDropdownMenuLink" role="button" data-bs-toggle="dropdown" aria-expanded="false">
                   <i class="fa-solid fa-user fa-xl"></i>
                 </a>
-                <ul class="dropdown-menu dropdown-menu-end dropdown-menu-dark" aria-labelledby="navbarDropdownMenuLink">
-                  <li><a class="dropdown-item" href="/profile/<%= username %>">Show Profile</a></li>
-                  <li><a class="dropdown-item" href="#" data-bs-toggle="modal" data-bs-target="#logoutModal">Logout</a></li>
+                <ul class="dropdown-menu dropdown-menu-end bg-dark" aria-labelledby="dropdownMenuButton">
+                  <li><h6 class="dropdown-header text-truncate"><%=username%></h6></li>
+                  <li><a class="dropdown-item text-white" href="/profile/<%=username%>">Show Profile</a></li>
+                  <li>
+                    <a class="dropdown-item text-white" href="#">Manage Profile</a>
+                    <ul class="dropdown-menu dropdown-submenu dropdown-submenu-left bg-dark">
+                      <li>
+                        <a class="dropdown-item text-white" data-bs-toggle="modal" data-bs-target="#emailModal">Change Email</a>
+                      </li>
+                      <li>
+                        <a class="dropdown-item text-white" data-bs-toggle="modal" data-bs-target="#passwordModal">Change Password</a>
+                      </li>
+                    </ul>
+                  </li>
+                  <li><a class="dropdown-item text-white logout" data-bs-toggle="modal" data-bs-target="#logoutModal">Logout</a></li>
+                  
                 </ul>
-              </li>
+              </div>
+              <form action="/logout" method="POST" id="logout-form">
+                <div class="modal fade" id="logoutModal" tabindex="-1" aria-labelledby="logoutModalLabel" aria-hidden="true">
+                  <div class="modal-dialog">
+                    <div class="modal-content">
+                      <div class="modal-header bg-dark">
+                        <h5 class="modal-title" id="logoutModalLabel">Logout Confirmation</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                      </div>
+                      <div class="modal-body bg-dark">
+                        Are you sure you want to logout?
+                      </div>
+                      <div class="modal-footer bg-dark">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                        <button type="submit" class="btn btn-danger">Logout</button>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </form>
+              <form action="/changeemail/<%=username %>" method="POST" id="email-form">
+                <div class="modal fade" id="emailModal" tabindex="-1" aria-labelledby="emailModalLabel" aria-hidden="true">
+                  <div class="modal-dialog">
+                    <div class="modal-content">
+                      <div class="modal-header bg-dark">
+                        <h5 class="modal-title" id="emailModalLabel">Change Email</h5>
+                        <button type="button" class="btn-close text-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                      </div>
+                      <div class="modal-body bg-dark">
+                        <label for="oldemail" class="form-label mt-2">Email</label>
+                        <input type="email" id="oldemail" name="oldemail" class="form-control" required>
+                        <label for="newemail" class="form-label mt-2">New Email</label>
+                        <input type="email" id="newemail" name="newemail" class="form-control" required>
+                      </div>
+                      <div class="modal-footer bg-dark">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                        <button type="submit" class="btn btn-primary">Save Changes</button>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </form>
+              <form action="/changepassword/<%=username %>" method="POST" id="password-form">
+                <div class="modal fade" id="passwordModal" tabindex="-1" aria-labelledby="passwordModalLabel" aria-hidden="true">
+                  <div class="modal-dialog">
+                    <div class="modal-content">
+                      <div class="modal-header bg-dark">
+                        <h5 class="modal-title" id="passwordModalLabel">Change Password</h5>
+                        <button type="button" class="btn-close text-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                      </div>
+                      <div class="modal-body bg-dark">
+                        <label for="oldpassword" class="form-label mt-2">Password</label>
+                        <input type="password" id="oldpassword" name="oldpassword" class="form-control" required>
+                        <label for="newpassword" class="form-label mt-2">New Password</label>
+                        <input type="password" id="newpassword" name="newpassword" class="form-control" required>
+                        <label for="confirmnewpassword" class="form-label mt-2">Confirm New Password</label>
+                        <input type="password" id="confirmnewpassword" name="confirmnewpassword" class="form-control" required>
+                      </div>
+                      <div class="modal-footer bg-dark">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                        <button type="submit" class="btn btn-primary">Save Changes</button>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </form>
+              
               <!-- Logout Modal -->
               <form action="/logout" method="POST" id="logout-form">
                 <div class="modal fade" id="logoutModal" tabindex="-1" aria-labelledby="logoutModalLabel" aria-hidden="true">
@@ -99,6 +184,11 @@
         <div class="row mt-3 mx-auto">
           <div class="col-lg-8">
             <div class="row">
+              <% if(error) { %>
+                <div class="alert alert-danger" role="alert">
+                  <%= error %>
+                </div>
+                <% } %>
               <div class="d-flex video-container justify-content-center" id="background-div">
                 <% if (isPaid && !videoOwned) { %>
                 <div class="payment mt-5 m-5">
@@ -140,8 +230,8 @@
                 poster="../public/images/offline.png"
                 <% if (isPaid && !videoOwned) { %> oncanplay="lockStream()" <% } else { %> controls <% } %>>
                 <source src="http://15.184.217.184/hls/<%= streamKey %>/<%= streamKey %>_720p.m3u8" type= 'application/x-mpegURL' label="720P">
-                <source src="http://15.184.217.184/hls/<%= streamKey %>/<%= streamKey %>_480p.m3u8" type= "application/x-mpegURL" label="480P" selected="true">
-                <source src="http://15.184.217.184/hls/<%= streamKey %>/<%= streamKey %>_360p.m3u8" type= 'application/x-mpegURL' label="360P">
+                <source src="http://15.184.217.184/hls/<%= streamKey %>/<%= streamKey %>_480p.m3u8" type= "application/x-mpegURL" label="480P" >
+                <source src="http://15.184.217.184/hls/<%= streamKey %>/<%= streamKey %>_360p.m3u8" type= 'application/x-mpegURL' label="360P" selected="true">
                   
                 </video>
               </div>
@@ -150,24 +240,11 @@
               <div class="col">
                 <h3><%= streamTitle %></h3>
               </div>
-              <!-- <div class="col d-flex justify-content-end">
-                <div class="btn-group border" role="group" aria-label="Basic radio toggle button group">
-                  <input type="radio" class="btn-check bg-dark" name="btnradio" id="360p" autocomplete="off" checked>
-                  <label class="btn border text-white" for="360p" value="360" data-stream-link="http://15.184.217.184/hls/<%= streamKey %>/<%= streamKey %>_360p.m3u8">360p</label>
-
-                  <input type="radio" class="btn-check" name="btnradio" id="btnradio2" autocomplete="off">
-                  <label class="btn border text-white" for="btnradio2" data-stream-link="http://15.184.217.184/hls/<%= streamKey %>/<%= streamKey %>_480p.m3u8">480p</label>
-
-                  <input type="radio" class="btn-check" name="btnradio" id="btnradio3" autocomplete="off">
-                  <label class="btn border text-white" for="btnradio3" data-stream-link="http://15.184.217.184/hls/<%= streamKey %>/<%= streamKey %>_720p.m3u8">720p</label>
-                </div>
-              </div> -->
-
             </div>
             <div class="row ms-2">
 
               <div class="d-flex">
-                <% if (target_user) { %>
+                <% if (profilePicExist) { %>
                 <img src=<%= target_user.profilepic_url %> alt="pfp" class="rounded-circle me-2" style="width: 4rem">
                 <% } else { %>
                 <img src="../public/images/default-pp.png" alt="pfp" class="rounded-circle me-2" style="width: 4rem">
@@ -180,26 +257,15 @@
       </div>
     </div>
   </div>
-  <script src="https://vjs.zencdn.net/8.3.0/video.min.js"></script>
   <script src="../public/javascripts/autocomplete.js"></script>
   <script src="../public/javascripts/videoLock.js"></script>
 
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.1/dist/js/bootstrap.min.js" integrity="sha384-7VPbUDkoPSGFnVtYi0QogXtr74QeVeeIs99Qfg5YCF+TidwNdjvaKZX19NZ/e6oz" crossorigin="anonymous"></script>
-  <script src="https://unpkg.com/@silvermine/videojs-quality-selector/dist/js/silvermine-videojs-quality-selector.min.js"></script>
 <script>
-    // Create the video player instance
-
     let player = videojs('live-stream',{},function() {
       var player = this;
          player.controlBar.addChild('QualitySelector');
       });
-      console.log(player.controlBar)
-
-    
-  //   player.qualitySelector({
-  //   displayCurrentQuality: true,
-  //   sources: player.src()
-  // });
 </script>
 </body>
 </html>
