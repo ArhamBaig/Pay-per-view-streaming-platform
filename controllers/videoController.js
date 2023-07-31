@@ -5,14 +5,21 @@ const fs = require("fs");
 const video = require("../models/video");
 const stream = require("../models/liveStream");
 const axios = require("axios");
-const sharp = require('sharp');
+const sharp = require("sharp");
+const http = require("http");
+
+
 const {
   S3Client,
   PutObjectCommand,
   GetObjectCommand,
   DeleteObjectCommand,
 } = require("@aws-sdk/client-s3");
+// const { Upload } = require("@aws-sdk/lib-storage");
+const AWS = require("aws-sdk")
 const { getSignedUrl } = require("@aws-sdk/s3-request-presigner");
+
+
 const moment = require("moment");
 const user = require("../models/user");
 dotenv.config();
@@ -28,13 +35,19 @@ const bucketName2 = process.env.AWS_TN_BUCKET_NAME;
 const bucketRegion2 = process.env.AWS_TN_BUCKET_REGION;
 const accessKey2 = process.env.AWS_TN_ACCESS_KEY;
 const secretAccessKey2 = process.env.AWS_TN_SECRET_KEY;
-
 const s3 = new S3Client({
   credentials: {
     accessKeyId: accessKey,
     secretAccessKey: secretAccessKey,
   },
   region: bucketRegion,
+});
+
+const upload_s3 = new AWS.S3({
+  region: bucketRegion,
+  accessKeyId: accessKey,
+  secretAccessKey: secretAccessKey,
+
 });
 
 const stream_s3 = new S3Client({
@@ -59,6 +72,7 @@ const contract = new web3.eth.Contract(contractABI, contractAddress);
 exports.videos_get = async (req, res) => {
   const latestVideos = await video.find({}).sort({ createdAt: -1 }).limit(8);
   const allVideos = await video.find({}).sort({ createdAt: -1 });
+  const popularVideos = await video.find({}).sort({ views: -1 }).limit(8);
   const videos = latestVideos;
   const remainingVideos = allVideos.slice(8);
   const streams = await stream.find({});
@@ -153,7 +167,7 @@ exports.videos_get = async (req, res) => {
     username: req.session.username,
     streamExist: streamExist,
     remainingVideos,
-
+    popularVideos
   });
 };
 
@@ -191,9 +205,24 @@ exports.video_play_get = async (req, res) => {
       Bucket: bucketName,
       Key: `${target_user.user_id}.png`,
     })
-  )
-  target_user.save()
+  );
+  await target_user.save();
+  // Increment views by 1
+  target_video.views++;
+  // Get the current date (without time)
+  const today = new Date().toDateString();
 
+  // Increment the daily view count only if the user hasn't viewed the video today
+  if (!target_video.dailyViews.get(today)) {
+    target_video.dailyViews.set(today, 1);
+  } else {
+    target_video.dailyViews.set(today, target_video.dailyViews.get(today) + 1);
+  }
+
+  await target_video.save();
+
+  await target_video.save();
+  console.log(target_video.views)
   let profilePicExist;
   try {
     const response = await axios.get(target_user.profilepic_url);
@@ -212,8 +241,43 @@ exports.video_play_get = async (req, res) => {
     error: error,
     username: req.session.username,
     target_user,
-    profilePicExist
+    profilePicExist,
   });
+};
+
+exports.video_stream_get = (req, res) => {
+  // Ensure there is a range given for the video
+  const range = req.headers.range;
+  if (!range) {
+    res.status(400).send("Requires Range header");
+  }
+  const videoUrl = req.params.video_url;
+  const videoPath = videoUrl;
+  const videoSize = fs.statSync(videoUrl).size;
+
+  // Parse Range
+  // Example: "bytes=32324-"
+  const CHUNK_SIZE = 10 ** 6; // 1MB
+  const start = Number(range.replace(/\D/g, ""));
+  const end = Math.min(start + CHUNK_SIZE, videoSize - 1);
+
+  // Create headers
+  const contentLength = end - start + 1;
+  const headers = {
+    "Content-Range": `bytes ${start}-${end}/${videoSize}`,
+    "Accept-Ranges": "bytes",
+    "Content-Length": contentLength,
+    "Content-Type": "video/mp4",
+  };
+
+  // HTTP Status 206 for Partial Content
+  res.writeHead(206, headers);
+
+  // create video read stream for this particular chunk
+  const videoStream = fs.createReadStream(videoPath, { start, end });
+
+  // Stream the video chunk to the client
+  videoStream.pipe(res);
 };
 
 exports.video_upload_get = (req, res) => {
@@ -224,6 +288,7 @@ exports.video_upload_get = (req, res) => {
 };
 
 exports.video_upload_post = async (req, res) => {
+  req.io.emit("uploadStarted","x");
   const video_id = randomVideoName();
   const thumbnail_name = `${video_id}`;
   const videoFile = req.file;
@@ -264,24 +329,24 @@ exports.video_upload_post = async (req, res) => {
   });
 
   const thumbnail_gen = await generator.generate({
-  numThumbs: 1,
-  size: `640x360`,
-  timestamps: ["50%"],
-  outputPrefix: thumbnail_name,
-});
+    numThumbs: 1,
+    size: `640x360`,
+    timestamps: ["50%"],
+    outputPrefix: thumbnail_name,
+  });
 
-const imagePath = `public/temp/${thumbnail_name}-thumbnail-640x360-0001.png`;
+  const imagePath = `public/temp/${thumbnail_name}-thumbnail-640x360-0001.png`;
 
-// Compress the thumbnail using sharp
-const compressedImagePath = `public/temp/${thumbnail_name}-thumbnail.png`;
-await sharp(imagePath)
-  .png({ quality: 20 }) // Adjust the quality as needed (0-100)
-  .toFile(compressedImagePath);
+  // Compress the thumbnail using sharp
+  const compressedImagePath = `public/temp/${thumbnail_name}-thumbnail.png`;
+  await sharp(imagePath)
+    .png({ quality: 20 }) // Adjust the quality as needed (0-100)
+    .toFile(compressedImagePath);
 
-fs.unlinkSync(videoPath);
-fs.unlinkSync(imagePath);
+  fs.unlinkSync(videoPath);
+  fs.unlinkSync(imagePath);
 
-const fileContent = fs.readFileSync(compressedImagePath);
+  const fileContent = fs.readFileSync(compressedImagePath);
 
   const videoParams = {
     Bucket: bucketName,
@@ -296,8 +361,27 @@ const fileContent = fs.readFileSync(compressedImagePath);
     ContentType: "image/png",
   };
 
-  const video_command = new PutObjectCommand(videoParams);
+ // Create a managed upload instance
+ const videoUpload = new AWS.S3.ManagedUpload({
+  params: videoParams,
+  service: upload_s3,
+});
+
+// Listen to the 'httpUploadProgress' event to track progress
+videoUpload.on('httpUploadProgress', (progress) => {
+  const uploadedBytes = progress.loaded;
+  const totalBytes = progress.total;
+  const percentage = Math.round((uploadedBytes / totalBytes) * 100);
+  
+  // Emit the progress percentage to the client-side
+  req.io.emit('uploadProgress', percentage);
+  if (percentage == 100){
+    req.io.emit('uploadComplete', percentage);
+  }
+});
+
   const image_command = new PutObjectCommand(imageParams);
+  const video_command = new PutObjectCommand(videoParams);
 
   const newVideo = new video({
     username: req.session.username,
@@ -306,14 +390,14 @@ const fileContent = fs.readFileSync(compressedImagePath);
     video_description: req.body.description,
     video_status: req.body.status,
     price: priceInWei,
-    priceInDollars:priceInDollars,
+    priceInDollars: priceInDollars,
     thumbnail_name: `${thumbnail_name}-thumbnail.png`,
     createdAt: Date.now(),
   });
-  
 
   if (req.body.status === "paid") {
-    try{
+    try {
+      req.io.emit('paymentStarted', "payment");
       const privateKey = req.body.privatekey;
       const uploaderAddress = req.body.address;
 
@@ -326,10 +410,11 @@ const fileContent = fs.readFileSync(compressedImagePath);
         req.session.error = "Invalid private key";
         return res.redirect(`/upload`);
       }
-  
+
       const account = web3.eth.accounts.privateKeyToAccount("0x" + privateKey);
       web3.eth.accounts.wallet.add(account);
-      const video_price = priceInWei;
+      const video_price = Math.ceil(priceInWei * 0.7);
+      
 
       if (account.address.toLowerCase() !== uploaderAddress.toLowerCase()) {
         req.session.error = "Private key does not match the wallet address";
@@ -342,7 +427,7 @@ const fileContent = fs.readFileSync(compressedImagePath);
       const gas = await contractMethod.estimateGas({ from: uploaderAddress });
       const gasPrice = await web3.eth.getGasPrice();
       const data = contractMethod.encodeABI();
-  
+
       const tx = {
         from: uploaderAddress,
         to: contract.options.address,
@@ -350,21 +435,17 @@ const fileContent = fs.readFileSync(compressedImagePath);
         gasPrice,
         data,
       };
-  
-      const signedTx = await web3.eth.accounts.signTransaction(
-        tx,
-        privateKey
-      );
+
+      const signedTx = await web3.eth.accounts.signTransaction(tx, privateKey);
       const receipt = await web3.eth.sendSignedTransaction(
         signedTx.rawTransaction
       );
-      
-      }
-      catch(error){
-        req.session.error = error.message
-        return res.redirect("/upload")
-      }
+      req.io.emit('paymentFinished', "payment");
+    } catch (error) {
+      req.session.error = error.message;
+      return res.redirect("/upload");
     }
+  }
 
   await newVideo.save();
   const username = req.session.username;
@@ -376,89 +457,103 @@ const fileContent = fs.readFileSync(compressedImagePath);
     { new: true }
   );
 
-  await s3.send(video_command);
-  await s3.send(image_command);
-  await newVideo.save();
-
-  req.session.isAuth = true;
-  req.session.video_id = newVideo.video_id;
-  fs.unlinkSync(`public/temp/${thumbnail_name}-thumbnail.png`);
-  res.redirect("/home");
-};
-
-exports.profile_get = async (req, res) => {
-  const error = req.session.error;
-  delete req.session.error;
-  const username = req.params.username;
-  const current_user = await user.findOne({ username: req.session.username });
-  const profile_user = await user.findOne({ username: username });
-  const current_user_following = current_user.following;
-
-  let profileOwner = false;
-  if (req.session.username == req.params.username) {
-    profileOwner = true;
-  }
-
-  let isFollowed = false;
-  if (current_user_following.includes(req.params.username)) {
-    isFollowed = true;
-  }
-
-  const videos = await video.find({ username: username });
-
-  for (let video of videos) {
-    video.thumbnail_url = await getSignedUrl(
-      s3,
-      new GetObjectCommand({
-        Bucket: bucketName,
-        Key: video.thumbnail_name,
-      })
-    );
-    const elapsed = moment(video.createdAt).fromNow();
-    video.elapsed = elapsed;
-  }
-  profile_user.profilepic_url = await getSignedUrl(
-    s3,
-    new GetObjectCommand({
-      Bucket: bucketName,
-      Key: `${profile_user.user_id}.png`,
-    })
-  );
-  profile_user.save();
-  let profilePicExist;
-  try {
-    const response = await axios.get(profile_user.profilepic_url);
-    if (response.status == 200) {
-      profilePicExist = true;
+  videoUpload.send(async(err, data) => {
+    if (err) {
+      console.error('Error uploading video:', err);
+      return res.redirect('/upload');
     }
-  } catch {
-    profilePicExist = false;
-  }
-
-  const target_user = await user.findOne({ username: username });
-  const followersCount = target_user.followers.length;
-
-  res.render("profile", {
-    videos: videos,
-    target_username: username,
-    profileOwner: profileOwner,
-    isFollowed: isFollowed,
-    followersCount: followersCount,
-    profile_pic: profile_user.profilepic_url,
-    username: req.session.username,
-    target_user: profile_user,
-    profilePicExist,
-    current_user,
-    error: error,
-    isAdmin: req.session.isAdmin
+  
+    await s3.send(image_command);
+    await newVideo.save();
+  
+    // Wait for any other necessary operations
+  
+    req.session.isAuth = true;
+    req.session.video_id = newVideo.video_id;
+    fs.unlinkSync(`public/temp/${thumbnail_name}-thumbnail.png`);
+    res.redirect("/home")
   });
 };
 
+exports.profile_get = async (req, res) => {
+  try {
+    const error = req.session.error;
+    delete req.session.error;
+    const username = req.params.username;
+    const current_user = await user.findOne({ username: req.session.username });
+    const profile_user = await user.findOne({ username: username });
+    const current_user_following = current_user?.following || [];
+
+    let profileOwner = false;
+    if (req.session.username == req.params.username) {
+      profileOwner = true;
+    }
+
+    let isFollowed = false;
+    if (current_user_following.includes(req.params.username)) {
+      isFollowed = true;
+    }
+
+    const videos = await video.find({ username: username });
+
+    for (let video of videos) {
+      video.thumbnail_url = await getSignedUrl(
+        s3,
+        new GetObjectCommand({
+          Bucket: bucketName,
+          Key: video.thumbnail_name,
+        })
+      );
+      const elapsed = moment(video.createdAt).fromNow();
+      video.elapsed = elapsed;
+    }
+    profile_user.profilepic_url = await getSignedUrl(
+      s3,
+      new GetObjectCommand({
+        Bucket: bucketName,
+        Key: `${profile_user.user_id}.png`,
+      })
+    );
+    profile_user.save();
+    let profilePicExist;
+    try {
+      const response = await axios.get(profile_user.profilepic_url);
+      if (response.status == 200) {
+        profilePicExist = true;
+      }
+    } catch {
+      profilePicExist = false;
+    }
+
+    const target_user = await user.findOne({ username: username });
+    const followersCount = target_user.followers.length;
+
+    res.render("profile", {
+      videos: videos,
+      target_username: username,
+      profileOwner: profileOwner,
+      isFollowed: isFollowed,
+      followersCount: followersCount,
+      profile_pic: profile_user.profilepic_url,
+      username: req.session.username,
+      target_user: profile_user,
+      profilePicExist,
+      current_user,
+      error: error,
+      isAdmin: req.session.isAdmin,
+    });
+  } catch (error) {
+    res.status(404).render("error", {
+      errorStatus: "404 - Not Found",
+      errorMessage: "Oops, something went wrong!",
+    });
+  }
+};
 exports.delete_video = async (req, res) => {
   const username = req.session.username;
   const video_id = req.params.video_id;
   const result = await video.deleteOne({ video_id: video_id });
-
+  console.log(video_id)
   const videoParams = {
     Bucket: bucketName,
     Key: video_id,
@@ -474,7 +569,7 @@ exports.delete_video = async (req, res) => {
   s3.send(videoCommand);
   s3.send(thumbnailCommand);
 
-  res.redirect(`/profile/${username}`);
+  res.redirect(`/admin/manageaccounts`);
 };
 
 exports.follow_post = async (req, res) => {
@@ -537,7 +632,6 @@ exports.upload_profilepic_post = async (req, res) => {
     await s3.send(profilePic_command);
     res.redirect(`profile/${username}`);
   } catch (error) {
-  
     res.status(500).send("Error uploading profile picture.");
   }
 };
@@ -578,17 +672,17 @@ exports.following_get = async (req, res) => {
     follower.save();
   });
   followers_following.forEach(async (follower) => {
-  try {
-    const response = await axios.get(follower.profilepic_url);
-    if (response.status == 200) {
-      follower.profilepic_exist = true;
+    try {
+      const response = await axios.get(follower.profilepic_url);
+      if (response.status == 200) {
+        follower.profilepic_exist = true;
+        follower.save();
+      }
+    } catch {
+      follower.profilepic_exist = false;
       follower.save();
     }
-  } catch {
-    follower.profilepic_exist = false
-    follower.save();
-  }
-});
+  });
   res.render("following", {
     username: req.session.username,
     following: followingArray,
@@ -604,10 +698,7 @@ exports.freevideo_get = async (req, res) => {
     video.elapsed = elapsed;
     video.save();
   }
-  res.render("freevideos", 
-  { username: req.session.username, 
-    videos: videos 
-  });
+  res.render("freevideos", { username: req.session.username, videos: videos });
 };
 
 exports.exclusivevideo_get = async (req, res) => {
@@ -635,42 +726,41 @@ exports.ownedvideo_get = async (req, res) => {
 
 const bcrypt = require("bcryptjs");
 
-exports.change_email = async(req,res)=> {
-  const username = await user.findOne({username: req.session.username});
-  if (username.email == req.body.oldemail){
-
+exports.change_email = async (req, res) => {
+  const username = await user.findOne({ username: req.session.username });
+  if (username.email == req.body.oldemail) {
     const emailExists = await user.findOne({ email: req.body.newemail });
-  
+
     if (emailExists) {
-      req.session.error = "Email already exists. Please choose a different email.";
+      req.session.error =
+        "Email already exists. Please choose a different email.";
       return res.redirect(`/profile/${username.username}`);
     }
 
     const newemail = req.body.newemail;
     username.email = newemail;
-    username.save()
-    res.redirect(`/profile/${username.username}`)  }
-  else {
-    req.session.error = `incorrect email`
-    res.redirect(`/profile/${username.username}`)  }
-}
-
-exports.change_password = async(req,res)=> {
-  const username = await user.findOne({username: req.session.username});
-  if (await bcrypt.compare(req.body.oldpassword,username.password)){
-    const newpassword = req.body.newpassword;
-    if (newpassword == req.body.confirmnewpassword){
-     username.password = await bcrypt.hash(newpassword, 12);
-     username.save()
-     res.redirect(`/profile/${username.username}`)
-    }
-    else{
-      req.session.error = `passwords do not match`
-      res.redirect(`/profile/${username.username}`)
-    }
+    username.save();
+    res.redirect(`/profile/${username.username}`);
+  } else {
+    req.session.error = `incorrect email`;
+    res.redirect(`/profile/${username.username}`);
   }
-  else{
-    req.session.error = `incorrect password`
-    res.redirect(`/profile/${username.username}`)  }
-}
+};
 
+exports.change_password = async (req, res) => {
+  const username = await user.findOne({ username: req.session.username });
+  if (await bcrypt.compare(req.body.oldpassword, username.password)) {
+    const newpassword = req.body.newpassword;
+    if (newpassword == req.body.confirmnewpassword) {
+      username.password = await bcrypt.hash(newpassword, 12);
+      username.save();
+      res.redirect(`/profile/${username.username}`);
+    } else {
+      req.session.error = `passwords do not match`;
+      res.redirect(`/profile/${username.username}`);
+    }
+  } else {
+    req.session.error = `incorrect password`;
+    res.redirect(`/profile/${username.username}`);
+  }
+};

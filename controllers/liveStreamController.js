@@ -79,7 +79,7 @@ exports.live_details_post = async(req,res) => {
     const account = web3.eth.accounts.privateKeyToAccount("0x" + privateKey);
     web3.eth.accounts.wallet.add(account);
 
-    const streamPrice = priceInWei;
+    const streamPrice = Math.ceil(priceInWei * 0.7);
     if (account.address.toLowerCase() !== uploaderAddress.toLowerCase()) {
       req.session.error = "Private key does not match the wallet address";
       return res.redirect(`/livedetails`);
@@ -132,10 +132,29 @@ exports.live_get = async(req, res) => {
   res.render("live", { user: targetUser, username: req.session.username});
 }
 
+exports.stream_error_get = (req,res) => {
+  delete req.session.error;
+  res.render("stream-error")
+}
+
+exports.error_404_get = (req, res) => {
+  res.render("error")
+};
+
 exports.liveStream_get = async(req,res) => {
   const error = req.session.error;
   delete req.session.error;
   const target_stream = await liveStream.findOne({username: req.params.username})
+  let streamExist;
+  try {
+    const response = await axios.get(target_stream.streamUrl);
+    if (response.status == 200) {
+      streamExist = true;
+    }
+  } catch (error) {
+    streamExist = false;
+    res.redirect("/stream-error");
+  }
 
   const target_user = await user.findOne({username: req.params.username})
   const streamKey = target_stream.streamKey;

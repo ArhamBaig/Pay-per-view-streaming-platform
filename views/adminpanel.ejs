@@ -22,15 +22,20 @@
   <div class="main-container d-flex">
     <div class="sidebar " id="side_nav">
       <div class="header-box px-3 pt-3 pb-4 d-flex justify-content-between logo">
-        <a class="" href="/home" style="text-decoration: none;">
-          <h1 class="fs-4 fw-bold text-white "><span class="bg-white text-dark rounded shadow px-2 me-2">LM</span><span style="color: #9a56ff;">LIVE</span>MG</h1>
-        </a>
+       <a class="" href="/home" style="text-decoration: none;">
+          <h1 class="fs-4 fw-bold">
+            <% if(isAdmin) {%>
+            <span class="fs-5 bg-white text-dark rounded shadow px-2 me-2">ADMIN</span>
+            <% } %>
+            <span  class="fs-4 fw-bold" style="color: #9a56ff;">LIVE</span><span class="fs-4 fw-bold">MG</span>
+          </h1>
+         </a>
         <button class="btn d-md-none d-block close-btn px-2 py-0"><i class="fa-solid fa-bars"></i></button>
       </div>
       <ul class="list-unstyled px-2">
         <li class="active"><a href="/admin/adminpanel" class="text-decoration-none px-3 py-2 d-block"><i class="fa-solid fa-house" style="color: #9a56ff;"></i> Dashboard</a></li>
         <li><a href="/admin/manageaccounts" class="text-decoration-none px-3 py-2 d-block"><i class="fa-solid fa-bars-progress" style="color: #9a56ff;"></i> Manage accounts</a></li>
-     </ul>
+      </ul>
     </div>
     <div class="content">
       <nav class="navbar navbar-expand-lg bg-dark">
@@ -107,10 +112,10 @@
             </div>
           </div>
           <div class="col">
-            <div class="card bg-dark my-2" >
+            <div class="card bg-dark my-2">
               <div class="card-header">
                 <h5 class="text-truncate fs-6">Accounts created last 5 days</h5>
-               
+
               </div>
               <div class="card-body">
                 <h5 class="text-truncate fw-bold fs-2"><%=lastFiveUserCount %></h5>
@@ -128,7 +133,7 @@
             </div>
           </div>
         </div>
-        
+
         <div class="row mx-auto">
           <div class="col-md-6 col-sm-12">
             <div class="card bg-dark my-2 chart-card">
@@ -150,9 +155,24 @@
                 <canvas id="video-count-chart"></canvas>
               </div>
             </div>
-          
+
+          </div>
         </div>
-      </div>
+        <div class="row mx-auto">
+          <!-- Last 5 Days Views Chart -->
+          <div class="col-md-12 col-sm-12">
+            <input type="hidden" id="last-5-days-views-data" data-dates="<%= JSON.stringify(labels) %>" data-views="<%= JSON.stringify(videoViewsData) %>">
+            <div class="card bg-dark my-2 chart-card">
+              <div class="card-header">
+                Last 5 Days Views
+              </div>
+              <div class="card-body">
+                <canvas id="last-5-days-views-chart"></canvas>
+              </div>
+            </div>
+          </div>
+
+        </div>
       </div>
     </div>
 
@@ -200,6 +220,39 @@
             fill: false,
           },
         ],
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        scales: {
+          yAxes: [{
+            ticks: {
+              beginAtZero: true,
+              precision: 0,
+              callback: function(value) {
+                return Math.round(value);
+              },
+            },
+          }, ],
+        },
+      },
+    });
+    // Last 5 Days Views Chart
+    const last5DaysViewsDataInput = document.getElementById("last-5-days-views-data");
+    const last5DaysDates = JSON.parse(last5DaysViewsDataInput.getAttribute("data-dates"));
+    const last5DaysViews = JSON.parse(last5DaysViewsDataInput.getAttribute("data-views"));
+
+    // Use the dates and views data to create the chart
+    const last5DaysViewsChart = new Chart(document.getElementById("last-5-days-views-chart"), {
+      type: "line",
+      data: {
+        labels: last5DaysDates,
+        datasets: [{
+          data: last5DaysViews,
+          label: "Views",
+          borderColor: "#6f42c1",
+          fill: false,
+        }],
       },
       options: {
         responsive: true,

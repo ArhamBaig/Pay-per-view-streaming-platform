@@ -20,6 +20,7 @@ const isAuth = require("./middleware/isAuth");
 const metamaskMiddleware = require("./middleware/metamask");
 const multerPfpMiddleware = require("./middleware/multer_pfp");
 const isAdmin =  require("./middleware/isAdmin");
+const http = require('http');
 
 //mongodb connection
 const connectDB = require("./config/db");
@@ -27,6 +28,13 @@ const port = 3000;
 const mongoURI = config.get("mongoURI");
 
 const app = express();
+const server = http.createServer(app);
+const io = require('socket.io')(server);
+
+app.use((req, res, next) => {
+  req.io = io;
+  next();
+});
 
 connectDB();
 
@@ -54,6 +62,11 @@ app.use('/public/stylesheets', express.static(path.join(__dirname, 'public/style
 app.use('/public/javascripts', express.static(path.join(__dirname, 'public/javascripts')));
 app.use('/public/images', express.static(path.join(__dirname, 'public/images')));
 
+io.on('connection', (socket) => {
+  console.log('A client connected.');
+});
+
+
 // Login Page
 app.get("/login", userController.login_get);
 app.post("/login", userController.login_post);
@@ -70,6 +83,7 @@ app.post("/upload",isAuth,uploadMiddleware.single('video'),videoController.video
 //get videos from s3
 // app.get("/video_list",isAuth,videoController.videos_get);
 app.get("/play/:video_id",isAuth,videoController.video_play_get);
+app.get("/video/stream/:video_url",isAuth,videoController.video_stream_get);
 
 //live stream through OBS
 app.get("/live",isAuth,liveStreamController.live_get);
@@ -106,7 +120,11 @@ app.get("/admin/adminpanel",isAdmin,isAuth,adminController.adminpanel_get);
 app.get("/admin/manageaccounts",isAdmin,isAuth,adminController.manageaccounts_get);
 app.post("/account/delete/:user_id",isAdmin,isAuth,adminController.deleteprofile_post);
 
+//errors
+app.get("/stream-error",isAuth,liveStreamController.stream_error_get);
+app.get("/*",isAuth,liveStreamController.error_404_get);
 
-app.listen(port, () => console.log(`Listening on port ${port}..`));
+server.listen(port, () => console.log(`Listening on port ${port}..`));
 
+module.exports = server;
 module.exports = app;

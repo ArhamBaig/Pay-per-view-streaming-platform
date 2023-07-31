@@ -9,15 +9,20 @@ const contract = new web3.eth.Contract(contractABI, contractAddress);
 const video = require("../models/video");
 const user = require("../models/user");
 const liveStream = require("../models/liveStream");
-exports.payment_get = (req, res) => {
-  const error = req.session.error;
-  delete req.session.error;
-  res.render("payment", { error: error });
-};
+// exports.payment_get = (req, res) => {
+//   const error = req.session.error;
+//   delete req.session.error;
+//   res.render("payment", { error: error });
+// };
 
 exports.payment_post = async (req, res) => {
+  req.io.emit('paymentInitiated', "paymentInitiated");
+  
   const video_id = req.params.video_id;
+  
+  
   try {
+    
     const buyerAddress = req.body.address;
     const privateKey = req.body.privateKey;
 
@@ -40,25 +45,37 @@ exports.payment_post = async (req, res) => {
       return res.redirect(`/play/${video_id}`);
     }
 
+    const videoPrice = target_video.price;
+    const thirtyPercent = Math.ceil(videoPrice * 0.3);
+    const seventyPercent = Math.ceil(videoPrice * 0.7);
+    
+    // Transfer 30% of the video price to another wallet (Replace "otherWalletAddress" with the actual address)
+    await web3.eth.sendTransaction({
+      from: buyerAddress,
+      to: "0x361B8F0e0f58028fE4CDdc618e23744B04da4D1e",
+      gas: 30000,
+      value: thirtyPercent.toString(),
+    });
+    
+    req.io.emit('paymentStarted', "paymentStarted");
+    
+    // Transfer 70% of the video price to the buyer's address
     const contractMethod = contract.methods.buyVideo(web3.utils.toBN(video_id));
     const gas = await contractMethod.estimateGas({
       from: buyerAddress,
-      value: target_video.price,
+      value: seventyPercent.toString(),
     });
     const gasPrice = await web3.eth.getGasPrice();
-    const buyerBalance = await web3.eth.getBalance(buyerAddress);
-
     const data = contractMethod.encodeABI();
-  
+
     const tx = {
       from: buyerAddress,
       to: contract.options.address,
       gas,
       gasPrice,
       data,
-      value: target_video.price,
+      value: seventyPercent.toString(),
     };
-    const totalPrice = gasPrice + tx.value;
 
     const signedTx = await web3.eth.accounts.signTransaction(tx, privateKey);
     const receipt = await web3.eth.sendSignedTransaction(
@@ -78,12 +95,16 @@ exports.payment_post = async (req, res) => {
       req.session.error = "Transaction failed.";
       return res.redirect(`/play/${video_id}`);
     }
+    req.io.emit('paymentFinished', "paymentFinished");
+
     res.redirect(`/play/${video_id}`);
   } catch (error) {
     req.session.error = `Insufficient funds`;
+    console.log(error)
     res.redirect(`/play/${video_id}`);
   }
 };
+
 
 exports.livestream_payment_post = async (req, res) => {
   const buyerAddress = req.body.address;
@@ -113,9 +134,21 @@ exports.livestream_payment_post = async (req, res) => {
     const contractMethod = contract.methods.buyVideo(
       web3.utils.toBN(streamKey)
     );
+    const videoPrice = target_stream.stream_price;
+    const thirtyPercent = Math.ceil(videoPrice * 0.3);
+    const seventyPercent = Math.ceil(videoPrice * 0.7);
+
+
+    await web3.eth.sendTransaction({
+      from: buyerAddress,
+      to: "0x361B8F0e0f58028fE4CDdc618e23744B04da4D1e",
+      gas: 30000,
+      value: thirtyPercent.toString(),
+    });
+
     const gas = await contractMethod.estimateGas({
       from: buyerAddress,
-      value: target_stream.stream_price,
+      value: seventyPercent,
     });
     const gasPrice = await web3.eth.getGasPrice();
     const data = contractMethod.encodeABI();
@@ -127,7 +160,7 @@ exports.livestream_payment_post = async (req, res) => {
       gas,
       gasPrice,
       data,
-      value: target_stream.stream_price,
+      value: seventyPercent,
     };
     const totalPrice = parseInt(gasPrice) + parseInt(tx.value);
 

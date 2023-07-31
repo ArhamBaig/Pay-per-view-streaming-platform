@@ -23,7 +23,14 @@
   <div class="main-container d-flex">
     <div class="sidebar" id="side_nav">
       <div class="header-box px-3 pt-3 pb-4 d-flex justify-content-between">
-        <h1 class="fs-4 fw-bold"><span class="bg-white text-dark rounded shadow px-2 me-2">LM</span><span style="color: #9a56ff;">LIVE</span>MG</h1>
+        <a class="" href="/home" style="text-decoration: none;">
+          <h1 class="fs-4 fw-bold">
+            <% if(isAdmin) {%>
+            <span class="fs-5 bg-white text-dark rounded shadow px-2 me-2">ADMIN</span>
+            <% } %>
+            <span  class="fs-4 fw-bold" style="color: #9a56ff;">LIVE</span><span class="fs-4 fw-bold">MG</span>
+          </h1>
+         </a>
         <button class="btn d-md-none d-block close-btn px-2 py-0"><i class="fa-solid fa-bars"></i></button>
       </div>
       <ul class="list-unstyled px-2">

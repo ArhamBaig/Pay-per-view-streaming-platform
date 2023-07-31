@@ -27,17 +27,27 @@ body{
     background: #772CE8;
 }
 
-.payment{
-    background-color: #1c1c1c;
-    position: absolute; 
-    width: 20rem;
-    height: 10rem;  
-    z-index: 1; 
-    display: flex; 
-    justify-content: center; 
-    align-items: center;
-    border-radius: 10px;
+.payment-container {
+  height: 500px;
+  background-color: #202020;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  align-items: center;
+  position: relative;
+  border-radius: 10px;
 }
+
+.payment {
+  text-align: center;
+}
+
+.payment-btn {
+  font-size: 24px;
+  padding: 20px;
+}
+
+
 
 .payment-btn{
     z-index: 2; 

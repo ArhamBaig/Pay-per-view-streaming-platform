@@ -23,7 +23,14 @@
   <div class="main-container d-flex">
     <div class="sidebar" id="side_nav">
       <div class="header-box px-3 pt-3 pb-4 d-flex justify-content-between">
-        <h1 class="fs-4 fw-bold"><span class="bg-white text-dark rounded shadow px-2 me-2">LM</span><span style="color: #9a56ff;">LIVE</span>MG</h1>
+        <a class="" href="/home" style="text-decoration: none;">
+          <h1 class="fs-4 fw-bold">
+            <% if(isAdmin) {%>
+            <span class="fs-5 bg-white text-dark rounded shadow px-2 me-2">ADMIN</span>
+            <% } %>
+            <span  class="fs-4 fw-bold" style="color: #9a56ff;">LIVE</span><span class="fs-4 fw-bold">MG</span>
+          </h1>
+         </a>
         <button class="btn d-md-none d-block close-btn px-2 py-0"><i class="fa-solid fa-bars"></i></button>
       </div>
       <ul class="list-unstyled px-2">
@@ -176,57 +183,39 @@
           </div>
         </div>
       </nav>
-        <div class="container-fluid">
-    
-          <div class="row mt-3  mx-auto">
-            <div class="col-lg-8 ms-4">
-              <div class="row">
-                <% if(error) { %>
-                  <div class="alert alert-danger" role="alert">
-                    <%= error %>
-                  </div>
-                  <% } %>
-                <div class="d-flex video-container justify-content-center" id="background-div">
-                  <% if (is_paid && !videoOwned) { %>
-                    <div class="payment mt-5 m-5">
-                    <button class="btn btn-primary payment-btn d-flex" id="payment" data-bs-toggle="modal" data-bs-target="#paymentModal">
-                      Pay with Ethereum <img src="../public/images/metamask.svg" width="50%" height="50%">
-
-                    </button>
-                    </div>
-                    <div class="modal fade bg-dark" id="paymentModal" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-labelledby="staticBackdropLabel" aria-hidden="true">
-                      <div class="modal-dialog modal-dialog-centered">
-                        <div class="modal-content">
-                          <div class="modal-header bg-dark">
-                            <h5 class="modal-title" id="exampleModalLabel">Payment</h5>
-                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                          </div>
-                          <form id="payment-form" action="/payment/<%=video.video_id%>" method="POST">
-                            
-                          <div class="modal-body bg-dark">
-                            <label for="walletAddress">Wallet Address:</label>
-                            <input type="text" name="address" class="form-control" required>
-                            <label for="privateKey">Private Key:</label>
-                            <input type="text" name="privateKey" class="form-control" required>
-                            
-                          </div>
-                          <div class="modal-footer bg-dark">
-                            <button type="submit" class="btn btn-primary" <% if(error){ %> onclick="alertFunc()" <% } %>>Pay</button>
-                          </div>
-                          </form>
-                          
-                        </div>
-                      </div>
-                    </div>
-                  <% } %>
-                <video class="rounded" width="100%" height="100%"  id="offlineVideo" <% if (is_paid && !videoOwned) { %>oncanplay="onCanPlayHandler()"  disablePictureInPicture controlsList="nodownload"<% } else { %>controls<% } %>>
-                  <source src="<%= video_url %>" type="video/mp4">
-                </video>
+      <div class="container-fluid">
+        <div class="row mt-3 mx-auto">
+          <div class="col-lg-8 ms-4">
+            <div class="row">
+              <% if(error) { %>
+              <div class="alert alert-danger" role="alert">
+                <%= error %>
+              </div>
+              <% } %>
+              <% if (is_paid && !videoOwned) { %>
+              <div class="payment-container d-flex justify-content-center align-items-center " id="background-div">
+                <div class="payment mt-5 m-5 ">
+                  <button class="btn btn-primary payment-btn d-flex mx-auto" id="payment" data-bs-toggle="modal" data-bs-target="#paymentModal">
+                    Pay with Ethereum <img src="../public/images/metamask.svg" width="50%" height="50%">
+                  </button>
                 </div>
               </div>
+              <% } else { %>
+              <video class="rounded" width="100%" height="100%" id="offlineVideo" controls>
+                <source src="<%= video_url %>" type="video/mp4">
+              </video>
+              <% } %>
               <div class="row">
+                <div class="col-11">
                 <h3 class="text-white mt-3 text-truncate"><%= video.video_title%></h3>
-                <h5 class="text-white text-truncate"><%= video.video_description %></h5>    
+                <h5 class="text-white text-truncate"><%= video.video_description %></h5>
+              </div>
+              <div class="col-1   text-truncate d-flex mt-3 text-muted">
+                <h6>• <%=video.views%> views</h6>
+              </div>
+              </div>
+            </div>
+            <div class="row mt-3">
               <div class="d-flex">
                 <% if (profilePicExist) { %>
                 <img src=<%= target_user.profilepic_url %> alt="pfp" class="rounded-circle me-2" style="width: 4rem">
@@ -234,20 +223,87 @@
                 <img src="../public/images/default-pp.png" alt="pfp" class="rounded-circle me-2" style="width: 4rem">
                 <% } %>
                 <h5 class="text-white mt-3"><%= video.username %></h5>
+                
               </div>
             </div>
           </div>
-          </div>
-        </div>
         </div>
       </div>
-    </body>
-  
-  <script>
-    $(document).ready(function() {
-  $('#error-modal').modal('show');
-});
+      
+      <% if (is_paid && !videoOwned) { %>
+      <div class="modal fade bg-dark" id="paymentModal" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-labelledby="staticBackdropLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+          <div class="modal-content">
+            <div class="modal-header bg-dark">
+              <h5 class="modal-title" id="exampleModalLabel">Payment</h5>
+              <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <form id="payment-form" action="/payment/<%=video.video_id%>" method="POST">
+              <div class="modal-body bg-dark">
+                <label for="walletAddress">Wallet Address:</label>
+                <input type="text" name="address" class="form-control" required>
+                <label for="privateKey">Private Key:</label>
+                <input type="text" name="privateKey" class="form-control" required>
+              </div>
+              <div class="modal-footer bg-dark">
+                <div class="row">
+                  <div class="col d-flex justify-content-start">
+                    <!-- Left side content (text) -->
+                    <div class="progress-label-payment bg-dark" style="display: none;">
+                      <p>Payment is being processed <i class="fa-solid fa-spinner fa-spin fa-lg" style="color: #8000ff;"></i> </p>
+                    </div>
+                    <div class="progress-label-payment-completed bg-dark" style="display: none;">
+                      <p><i class="fa-solid fa-circle-check fa-2xl" style="color: #0dc61b;"></i> Payment processed!</p>
+                    </div>
+                  </div>
+                  <div class="col d-flex justify-content-end ">
+                    <!-- Right side content (button) -->
+                    <button type="submit" class="btn btn-primary" <% if(error){ %> onclick="alertFunc()" <% } %>>Pay</button>
+                  </div>
+                </div>
+                
+          </div>
+            </form>
+          </div>
+        </div>
+      </div>
+      <% } %>
+      
+      
+        </div>
+      </div>
+      <script src="/socket.io/socket.io.js"></script>
+
+    <script>
+$(document).ready(function() {
+  const socket = io();
+
+    socket.on('connect', () => {
+      console.log('Connected to Socket.IO server');
+    });
+
+    socket.on('disconnect', () => {
+      console.log('Disconnected from Socket.IO server');
+    });
+
+    socket.on('paymentInitiated',()=>{
+      $('.progress-label-payment').hide();
+      console.log("paymentInitiated")
+      $('.progress-label-payment-completed').hide();
+    })
+    socket.on('paymentStarted', ()=> {
+      $('.progress-label-payment').show();
+      console.log("paymentStarted");
+    })
+    socket.on('paymentFinished', ()=> {
+      $('.progress-label-payment').hide()
+      console.log("paymentFinished")
+      $('.progress-label-payment-completed').show()
+    })
+})
     </script>
+    </body>
+    
       
   <!-- Bootstrap JavaScript Libraries -->
   <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.6/dist/umd/popper.min.js"

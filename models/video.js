@@ -52,7 +52,16 @@ const videoSchema = new Schema({
   },
   video_token: {
     type:String
-  }
+  },
+  views: {
+    type: Number,
+    default: 0,
+  },
+  dailyViews: {
+    type: Map,
+    of: Number,
+    default: {},
+  },
 });
 
 videoSchema.pre('save', function(next) {

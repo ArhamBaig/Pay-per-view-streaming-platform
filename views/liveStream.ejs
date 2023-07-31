@@ -27,8 +27,15 @@
   <div class="main-container d-flex">
     <div class="sidebar" id="side_nav">
       <div class="header-box px-3 pt-3 pb-4 d-flex justify-content-between">
-        <h1 class="fs-4 fw-bold"><span class="bg-white text-dark rounded shadow px-2 me-2">LM</span><span style="color: #9a56ff;">LIVE</span>MG</h1>
-        <button class="btn d-md-none d-block close-btn px-2 py-0"><i class="fa-solid fa-bars"></i></button>
+        <a class="" href="/home" style="text-decoration: none;">
+          <h1 class="fs-4 fw-bold">
+            <% if(isAdmin) {%>
+            <span class="fs-5 bg-white text-dark rounded shadow px-2 me-2">ADMIN</span>
+            <% } %>
+            <span  class="fs-4 fw-bold" style="color: #9a56ff;">LIVE</span><span class="fs-4 fw-bold">MG</span>
+          </h1>
+         </a>
+                 <button class="btn d-md-none d-block close-btn px-2 py-0"><i class="fa-solid fa-bars"></i></button>
       </div>
       <ul class="list-unstyled px-2">
         <li><a href="/home" class="text-decoration-none px-3 py-2 d-block"><i class="fa-solid fa-house" style="color: #9a56ff;"></i> Home</a></li>
@@ -191,9 +198,13 @@
                 <% } %>
               <div class="d-flex video-container justify-content-center" id="background-div">
                 <% if (isPaid && !videoOwned) { %>
-                <div class="payment mt-5 m-5">
-                  <button class="btn btn-primary" id="payment" data-bs-toggle="modal" data-bs-target="#paymentModal">Pay with Ethereum</button>
-                </div>
+                  <div class="payment-container d-flex justify-content-center align-items-center " id="background-div">
+                    <div class="payment mt-5 m-5 ">
+                      <button class="btn btn-primary payment-btn d-flex mx-auto" id="payment" data-bs-toggle="modal" data-bs-target="#paymentModal">
+                        Pay with Ethereum <img src="../public/images/metamask.svg" width="50%" height="50%">
+                      </button>
+                    </div>
+                  </div>
                 <div class="modal fade bg-dark" id="paymentModal" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-labelledby="staticBackdropLabel" aria-hidden="true">
                   <div class="modal-dialog modal-dialog-centered">
                     <div class="modal-content">
@@ -218,8 +229,8 @@
                     </div>
                   </div>
                 </div>
-                <% } %>
-
+                <% } else { %>
+                
                 <video 
                 class="video-js vjs-default-skin" 
                 id="live-stream" 
@@ -228,12 +239,13 @@
                 width="1100"
                 height="600"
                 poster="../public/images/offline.png"
-                <% if (isPaid && !videoOwned) { %> oncanplay="lockStream()" <% } else { %> controls <% } %>>
+                >
                 <source src="http://15.184.217.184/hls/<%= streamKey %>/<%= streamKey %>_720p.m3u8" type= 'application/x-mpegURL' label="720P">
                 <source src="http://15.184.217.184/hls/<%= streamKey %>/<%= streamKey %>_480p.m3u8" type= "application/x-mpegURL" label="480P" >
                 <source src="http://15.184.217.184/hls/<%= streamKey %>/<%= streamKey %>_360p.m3u8" type= 'application/x-mpegURL' label="360P" selected="true">
                   
                 </video>
+                <% } %>
               </div>
             </div>
             <div class="row ms-2 m-2">

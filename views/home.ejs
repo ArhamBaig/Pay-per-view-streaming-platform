@@ -23,8 +23,14 @@
   <div class="main-container d-flex">
     <div class="sidebar" id="side_nav">
       <div class="header-box px-3 pt-3 pb-4 d-flex justify-content-between">
-        <h1 class="fs-4 fw-bold"><span class="bg-white text-dark rounded shadow px-2 me-2">LM</span><span style="color: #9a56ff;">LIVE</span>MG</h1>
-        <button class="btn d-md-none d-block close-btn px-2 py-0"><i class="fa-solid fa-bars"></i></button>
+        <a class="" href="/home" style="text-decoration: none;">
+          <h1 class="fs-4 fw-bold">
+            <% if(isAdmin) {%>
+            <span class="fs-5 bg-white text-dark rounded shadow px-2 me-2">ADMIN</span>
+            <% } %>
+            <span  class="fs-4 fw-bold" style="color: #9a56ff;">LIVE</span><span class="fs-4 fw-bold">MG</span>
+          </h1>
+         </a>        <button class="btn d-md-none d-block close-btn px-2 py-0"><i class="fa-solid fa-bars"></i></button>
       </div>
       <ul class="list-unstyled px-2">
         <li class="active"><a href="/home" class="text-decoration-none px-3 py-2 d-block"><i class="fa-solid fa-house" style="color: #9a56ff;"></i> Home</a></li>
@@ -181,7 +187,7 @@
 
       <div class="container-fluid flex-wrap d-flex mx-auto">
         <% if (streamExist) {%>
-        <div class="col-12 mx-3">
+        <div class="col-12 mx-3 mt-4">
           <h4><span style="color: #9a56ff;">Live Streams </span><span class="text-white">we think you'll like</span></h4>
         </div>
         <% } %>
@@ -216,6 +222,11 @@
         </div>
         <% }}) %>
         <div class="col-12 m-3">
+          <% streams.forEach((stream)=> { %>
+          <% if (stream.check_stream == true) { %>
+            <hr class="my-4 rounded" style="width: 93.5%; border-top: 4px solid #ddd;">
+
+            <% }}) %>
           <h4><span style="color: #9a56ff;">Recent </span><span class="text-white">videos</span></h4>
         </div>
         <% videos.forEach(video=> { %>
@@ -243,8 +254,16 @@
                       <p class="card-text text-muted text-start text-white text-truncate mb-0"><%= video.username %></p>
                     </a>
                   </div>
+              
+                </div>
+                <div class="row">
+                  <div class="col-5 ">
+                  <p class="card-text text-muted text-white text-truncate mb-0" style="font-size: smaller;">
+                    <%= video.views %> views
+                  </p>
+                </div>
                   <div class="col-7 text-end">
-                    <p class="card-text text-muted fs-6 text-white text-truncate mb-0">• <%= video.elapsed %></p>
+                    <p class="card-text text-muted text-white text-truncate mb-0" style="font-size: smaller;">• <%= video.elapsed %></p>
                   </div>
                 </div>
               </div>
@@ -253,11 +272,11 @@
         </div>
         <% }) %>
 
-
         <div class="col-12 m-3">
-          <h4><span style="color: #9a56ff;">Videos </span><span class="text-white">we think you'll like</span></h4>
+          <hr class="my-4 rounded" style="width: 93.5%; border-top: 4px solid #ddd;">
+          <h4><span style="color: #9a56ff;">Popular </span><span class="text-white">videos</span></h4>
         </div>
-        <% remainingVideos.forEach(video=> { %>
+        <% popularVideos.forEach(video=> { %>
         <div class="mx-3 video">
           <a href="/play/<%= video.video_id %>">
             <div class="card bg-dark mb-4" style="width: 18rem;">
@@ -282,8 +301,64 @@
                       <p class="card-text text-muted text-start text-white text-truncate mb-0"><%= video.username %></p>
                     </a>
                   </div>
+              
+                </div>
+                <div class="row">
+                  <div class="col-5 ">
+                  <p class="card-text text-muted text-white text-truncate mb-0" style="font-size: smaller;">
+                    <%= video.views %> views
+                  </p>
+                </div>
                   <div class="col-7 text-end">
-                    <p class="card-text text-muted fs-6 text-white text-truncate mb-0">• <%= video.elapsed %></p>
+                    <p class="card-text text-muted text-white text-truncate mb-0" style="font-size: smaller;">• <%= video.elapsed %></p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </a>
+        </div>
+        <% }) %>
+
+        
+        <div class="col-12 m-3">
+          <hr class="my-4 rounded" style="width: 93.5%; border-top: 4px solid #ddd;">
+          <h4><span style="color: #9a56ff;">Videos </span><span class="text-white">we think you'll like</span></h4>
+        </div>
+        <% remainingVideos.forEach(video=> { %>
+        <div class="mx-3 video">
+          <a href="/play/<%= video.video_id %>">
+            <div class="card bg-dark mb-4" style="width: 18rem;">
+              <img class="card-img-top<% if (video.video_status == 'paid') { %> blurred<% } %>" src="<%= video.thumbnail_url %>" alt="Thumbnail" loading="lazy">
+              <% if (video.video_status == 'paid') { %>
+              <span class="badge bg-warning text-dark position-absolute  start-0 ms-1 mt-1">Paid</span>
+              <% } %>
+              <div class="card-body h-100">
+                <div class="d-flex">
+                  <div class="col-10">
+                    <h5 class="card-title fw-bold text-truncate text-white" style="text-decoration: none;"><%= video.video_title %></h5>
+                  </div>
+                  <% if (video.video_status == 'paid') { %>
+                  <div class="col-2">
+                    <span class="fw-bold text-white position-absolute end-0 me-1"><span style="color:#9a56ff">$</span><%=video.priceInDollars%></span>
+                  </div>
+                  <% } %>
+                </div>
+                <div class="row align-items-center">
+                  <div class="col-5">
+                    <a href="/profile/<%= video.username %>">
+                      <p class="card-text text-muted text-start text-white text-truncate mb-0"><%= video.username %></p>
+                    </a>
+                  </div>
+               
+                </div>
+                <div class="row">
+                  <div class="col-5 ">
+                  <p class="card-text text-muted text-white text-truncate mb-0" style="font-size: smaller;">
+                    <%= video.views %> views
+                  </p>
+                </div>
+                  <div class="col-7 text-end">
+                    <p class="card-text text-muted text-white text-truncate mb-0" style="font-size: smaller;">• <%= video.elapsed %></p>
                   </div>
                 </div>
               </div>

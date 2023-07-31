@@ -64,30 +64,30 @@ exports.adminpanel_get = async (req, res) => {
     }
   });
 
-  // Get the date 5 days ago
-  const fiveDaysAgo = new Date();
-  fiveDaysAgo.setDate(fiveDaysAgo.getDate() - 5);
+ // Get the date 5 days ago
+const fiveDaysAgo = new Date();
+fiveDaysAgo.setDate(fiveDaysAgo.getDate() - 5);
 
+// Group videos by date
+const groupedVideos = {};
 
-  // Group videos by date
-  const groupedVideos = {};
-  
-  videos.forEach((video) => {
-    const createdAt = new Date(video.createdAt).toDateString();
-  
-    if (createdAt >= fiveDaysAgo.toDateString()) {
-      if (!groupedVideos[createdAt]) {
-        groupedVideos[createdAt] = 1;
-      } else {
-        groupedVideos[createdAt]++;
-      }
+videos.forEach((video) => {
+  const createdAt = new Date(video.createdAt);
+
+  // Check if the video was created within the last 5 days
+  if (createdAt >= fiveDaysAgo) {
+    const createdAtDateString = createdAt.toDateString();
+
+    if (!groupedVideos[createdAtDateString]) {
+      groupedVideos[createdAtDateString] = 1;
+    } else {
+      groupedVideos[createdAtDateString]++;
     }
-  });
-
+  }
+});
   // Create the labels (dates) and data (video counts) for the chart
   const labels = [];
   const data = [];
-
 
   for (let i = 4; i >= 0; i--) {
     const date = new Date();
@@ -102,34 +102,69 @@ exports.adminpanel_get = async (req, res) => {
   const usersCount = users.length;
   const livestreamsCount = livestreams.length;
   const groupedUser = {};
+  
   users.forEach((user) => {
-    const createdAt = new Date(user.createdAt).toDateString();
-    if (createdAt >= fiveDaysAgo.toDateString()) {
-      if (!groupedUser[createdAt]) {
-        groupedUser[createdAt] = 1;
+    const createdAt = new Date(user.createdAt);
+  
+    // Check if the user was created within the last 5 days
+    if (createdAt >= fiveDaysAgo) {
+      const createdAtDateString = createdAt.toDateString();
+  
+      if (!groupedUser[createdAtDateString]) {
+        groupedUser[createdAtDateString] = 1;
       } else {
-        groupedUser[createdAt]++;
+        groupedUser[createdAtDateString]++;
       }
     }
   });
-  console.log(groupedUser)
+  
   const userData = [];
   for (let i = 4; i >= 0; i--) {
     const date = new Date();
     date.setDate(date.getDate() - i);
-
+  
     const dateString = date.toDateString();
-
+  
     const count = groupedUser[dateString] || 0;
-    console.log(count)
+  
     userData.push({ date: dateString, count });
   }
-
+  
   const lastFiveUserCount = userData.reduce((accumulator, currentValue) => {
     return accumulator + currentValue.count;
   }, 0);
   const lastFiveUserData = userData.map((item) => item.count);
-  console.log(userData)
+  
+
+  //===========================================================================================
+
+// Get all video views data and calculate the count of views per day
+const groupedVideoViews = {};
+
+videos.forEach((video) => {
+  video.dailyViews.forEach((views, date) => {
+    const createdAtDateString = new Date(date).toDateString();
+
+    if (!groupedVideoViews[createdAtDateString]) {
+      groupedVideoViews[createdAtDateString] = views;
+    } else {
+      groupedVideoViews[createdAtDateString] += views;
+    }
+  });
+});
+
+// Create the data (video views count) for the chart
+const videoViewsData = [];
+
+for (let i = 4; i >= 0; i--) {
+  const date = new Date();
+  date.setDate(date.getDate() - i);
+  const dateString = date.toDateString();
+  videoViewsData.push(groupedVideoViews[dateString] || 0);
+}
+
+console.log(groupedVideoViews)
+  //===========================================================================================
 
   res.render("adminpanel", {
     paidVideosCount,
@@ -141,12 +176,14 @@ exports.adminpanel_get = async (req, res) => {
     lastFiveUserCount,
     livestreamsCount,
     lastFiveUserData,
+    lastFiveUserData,
+    videoViewsData,
   });
 };
 
 exports.manageaccounts_get = async (req, res) => {
-  accounts = await user.find({});
-  res.render("manageaccounts", accounts);
+  const accounts = await user.find({ username: { $ne: "admin" } });
+  res.render("manageaccounts", {accounts});
 };
 
 exports.deleteprofile_post = async (req, res) => {
